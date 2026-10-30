@@ -1,0 +1,18 @@
+import fs from 'node:fs';import * as S from '../stats.js';
+const F=JSON.parse(fs.readFileSync(new URL('./fixtures.json',import.meta.url)));
+let bad=0,cnt=0;const near=(n,a,b,tol=1e-6)=>{cnt++;const e=Math.abs(a-b)/Math.max(1e-12,Math.abs(b)<1e-3?1:Math.abs(b));if(!(e<tol)){bad++;console.log('FAIL',n,a,b)}};
+F.t.forEach(([t,df,p])=>near('pT2 '+t+','+df,S.pT2(t,df),p,1e-8));
+F.F.forEach(([f,a,b,p])=>near('pF '+f,S.pF(f,a,b),p,1e-8));
+F.chi.forEach(([x,k,p])=>near('pChi '+x,S.pChi(x,k),p,1e-8));
+F.tcrit.forEach(([df,t])=>near('tcrit '+df,S.tCrit(.05,df),t,1e-7));
+const r=S.tInd(F.a,F.b),T=F.tind;near('t eq',r.eq.t,T.t);near('p eq',r.eq.p,T.p,1e-8);near('t welch',r.un.t,T.tw);near('p welch',r.un.p,T.pw,1e-8);near('df welch',r.un.df,T.dfw);near('lev F',r.lev.F,T.lev);near('lev p',r.lev.p,T.levp,1e-8);
+const tp=S.tPaired(F.a.slice(0,23),F.b2);near('paired t',tp.t,F.tpair.t);near('paired p',tp.p,F.tpair.p,1e-8);near('paired r',tp.r,F.tpair.r);near('paired rp',tp.rp,F.tpair.rp,1e-8);
+const t1=S.tOne(F.a,48);near('t1',t1.t,F.t1.t);near('t1 p',t1.p,F.t1.p,1e-8);
+const an=S.anovaOne([F.a,F.b,F.c]);near('anova F',an.F,F.anova.F);near('anova p',an.p,F.anova.p,1e-8);
+const d=S.desc(F.a);near('skew',d.skew,F.desc.skew);near('kurt',d.kurt,F.desc.kurt);near('sd',d.sd,F.desc.sd);
+const s=Float64Array.from(F.a).sort();near('q1',S.percentile(s,.25),F.desc.q1);near('med',S.percentile(s,.5),F.desc.med);near('q3',S.percentile(s,.75),F.desc.q3);
+near('pearson r',S.corr(F.x,F.y),F.pear[0]);near('pearson p',S.corrP(S.corr(F.x,F.y),40),F.pear[1],1e-8);near('spearman',S.spearman(F.x,F.y),F.spear[0]);near('spearman p',S.corrP(S.spearman(F.x,F.y),40),F.spear[1],1e-6);
+const c=S.chiSq(F.tab);near('chi',c.chi,F.chi2.chi);near('chi p',c.p,F.chi2.p,1e-8);
+const c2=S.chiSq(F.t22);near('fisher',c2.fisher,F.fisher,1e-8);near('yates',c2.yates,F.yates.chi);near('yates p',c2.pYates,F.yates.p,1e-8);
+const w=S.welchAnova([F.a,F.b,F.c]);console.log('welch',w.F.toFixed(4),w.p.toFixed(4));
+console.log(bad?`${bad} FAILED of ${cnt}`:`ALL ${cnt} CHECKS PASS`);process.exit(bad?1:0);

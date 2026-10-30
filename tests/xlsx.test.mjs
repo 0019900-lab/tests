@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import vm from 'node:vm';import fs from 'node:fs';
+vm.runInThisContext(fs.readFileSync(new URL('../vendor/xlsx.full.min.js',import.meta.url),'utf8'));
+const XLSX=globalThis.XLSX;
+import {rowsToState} from '../data.js';
+console.log('SheetJS',XLSX.version);
+const ws=XLSX.utils.aoa_to_sheet([['name','age','score'],['Ali',30,1.5],['Sara',25,2.25],['Omar',null,3]]);
+const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'S1');
+const buf=XLSX.write(wb,{type:'array',bookType:'xlsx'});
+const back=XLSX.read(buf,{type:'array'});
+const rows=XLSX.utils.sheet_to_json(back.Sheets[back.SheetNames[0]],{header:1,raw:true,defval:null});
+const st=rowsToState(rows,'t');
+assert.equal(st.n,3);assert.equal(st.vars[0].type,'String');assert.equal(st.vars[1].type,'Numeric');assert.equal(st.vars[2].decimals,2);assert.equal(st.cols[1][2],null);
+console.log('XLSX import OK');
