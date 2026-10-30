@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart-Analysis</title>
+<meta name="theme-color" content="#1f6feb">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/favicon-32.png" type="image/png"><link rel="apple-touch-icon" href="assets/icon-192.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="tg0" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e6bff" stop-opacity=".55"/><stop offset="1" stop-color="#1e6bff" stop-opacity=".12"/></linearGradient><linearGradient id="tg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6366f1" stop-opacity=".55"/><stop offset="1" stop-color="#6366f1" stop-opacity=".12"/></linearGradient><linearGradient id="tg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0ea5a4" stop-opacity=".55"/><stop offset="1" stop-color="#0ea5a4" stop-opacity=".12"/></linearGradient><linearGradient id="tg3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b5cf6" stop-opacity=".55"/><stop offset="1" stop-color="#8b5cf6" stop-opacity=".12"/></linearGradient><linearGradient id="ts0" gradientUnits="userSpaceOnUse" x1="3" y1="3" x2="21" y2="21"><stop offset="0" stop-color="#1e6bff"/><stop offset="1" stop-color="#0fb3d9"/></linearGradient><linearGradient id="tf0" gradientUnits="userSpaceOnUse" x1="3" y1="3" x2="21" y2="21"><stop offset="0" stop-color="#1e6bff" stop-opacity=".30"/><stop offset="1" stop-color="#0fb3d9" stop-opacity=".10"/></linearGradient><linearGradient id="ts1" gradientUnits="userSpaceOnUse" x1="3" y1="3" x2="21" y2="21"><stop offset="0" stop-color="#5b5bf0"/><stop offset="1" stop-color="#a855f7"/></linearGradient><linearGradient id="tf1" gradientUnits="userSpaceOnUse" x1="3" y1="3" x2="21" y2="21"><stop offset="0" stop-color="#5b5bf0" stop-opacity=".30"/><stop offset="1" stop-color="#a855f7" stop-opacity=".10"/></linearGradient><linearGradient id="ts2" gradientUnits="userSpaceOnUse" x1="3" y1="3" x2="21" y2="21"><stop offset="0" stop-color="#0d9488"/><stop offset="1" stop-color="#22c55e"/></linearGradient><linearGradient id="tf2" gradientUnits="userSpaceOnUse" x1="3" y1="3" x2="21" y2="21"><stop offset="0" stop-color="#0d9488" stop-opacity=".30"/><stop offset="1" stop-color="#22c55e" stop-opacity=".10"/></linearGradient><linearGradient id="ts3" gradientUnits="userSpaceOnUse" x1="3" y1="3" x2="21" y2="21"><stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#ec4899"/></linearGradient><linearGradient id="tf3" gradientUnits="userSpaceOnUse" x1="3" y1="3" x2="21" y2="21"><stop offset="0" stop-color="#7c3aed" stop-opacity=".30"/><stop offset="1" stop-color="#ec4899" stop-opacity=".10"/></linearGradient></defs></svg>
+<header id="titlebar"><span class="brand"></span><span id="docname">Untitled1 [DataSet1]</span><span class="tbr"><span id="tbCtl"></span><button id="btnGuide" class="pill"></button><button id="btnDalia" class="dalia" type="button"></button><button id="btnInstall" hidden></button></span></header>
+<nav id="menubar" role="menubar"></nav>
+<div id="toolbar" role="toolbar"></div>
+<main id="workspace">
+  <section id="dataPane">
+    <div id="formulaBar"><span id="cellRef">1 : var1</span><input id="cellInput"></div>
+    <div id="gridWrap"><table id="grid"></table><table id="varGrid" hidden></table></div>
+    <div id="tabs"><button class="tab active" data-view="data">Data View</button><button class="tab" data-view="var">Variable View</button></div>
+  </section>
+  <aside id="outputPane"></aside>
+</main>
+<footer id="statusbar"><span id="status">المحرك جاهز</span><span id="info"></span><span id="hint">Ctrl+K للبحث عن أي أمر</span></footer>
+<div id="palette" hidden><div class="box"><input id="palInput" placeholder="ابحث عن أمر أو تحليل..."><ul id="palList"></ul></div></div>
+<script type="module" src="app.js"></script>
+</body></html>

@@ -1,0 +1,4 @@
+const V='smart-analysis-v0.9',F=['./','index.html','styles.css','app.js','data.js','ui-grid.js','files.js','stats.js','output.js','dialog.js','analyses.js','vendor/xlsx.full.min.js','manifest.webmanifest','icon.svg','report.js','i18n.js','icons.js','guide.js','guide-data.js','welcome.js','find.js','keys.js','charts.js','explain.js','config.js','assets/dalia-128.png','assets/dalia-256.png','assets/logo.png','assets/mark.png','assets/icon-192.png','assets/icon-512.png','assets/favicon-32.png'];
+self.addEventListener('install',e=>e.waitUntil(caches.open(V).then(c=>c.addAll(F)).then(()=>self.skipWaiting())));
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));
+self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)))});
