@@ -2,7 +2,7 @@
 
 > **الغرض:** يتيح هذا الملف لأي جلسة جديدة (أو أي مطوّر) أن تكمل العمل دون شرح مسبق. حدّثه في نهاية كل مرحلة.
 
-**الإصدار:** 0.6.0 · **آخر تحديث:** 2026-10-31 · **المراحل المكتملة:** 1، 2، 3، 4، والجزء الأول من 5 · **المتبقي في المرحلة 5:** الانحدار اللوجستي، التحليل العاملي، تجهيز البيانات
+**الإصدار:** 0.7.0 · **آخر تحديث:** 2026-10-31 · **المراحل المكتملة:** 1، 2، 3، 4، والجزء الأول من 5 · **المتبقي في المرحلة 5:** الانحدار اللوجستي، التحليل العاملي، تجهيز البيانات
 **الاسم:** Smart-Analysis (كان StatLab). امتداد ملف المشروع ما زال `.statlab` للتوافق مع الملفات المحفوظة سابقاً.
 
 ## 1) ما هو البرنامج
@@ -19,6 +19,8 @@
 | 3 (اختصارات) | قراءة المفتاح برمزه الفيزيائي (تعمل مع التخطيط العربي)، ومرحلة الالتقاط | ✅ |
 | 3 (دليل) | دليل F1: ابدأ هنا، خريطة الواجهة، الأدوات، الاختصارات، الأيقونات، المصطلحات، الجديد | ✅ |
 | 4 | **الرسوم** (مدرج تكراري، أعمدة، صندوق، انتشار + انحدار، Q-Q) كـ SVG مرقّمة (Figure n) وتُصدَّر؛ **«فسّر نتائجي»** بقواعد حتمية لكل التحاليل والرسوم (عربي/إنجليزي) | ✅ 33 فحصاً للرسوم + 50 للشرح |
+| 5 (Variable View) | **أنواع SPSS الاثنا عشر** (Numeric, Comma, Dot, Scientific notation, 4×Date, Dollar, Custom currency, String, Restricted Number)؛ عمودا **Columns** و**Align**؛ عرض Data View يتبع Columns/Align لكل متغير؛ شرح عربي بجانب خيارات النوع/القياس/الدور/المحاذاة | ✅ 31 فحص (`formats.test.mjs`) + 20 فحص واجهة (`ui.vars.py`) |
+| 5 (لغة وخطوط) | الدليل بلا عربية في الواجهة الإنجليزية (صفحة المصطلحات والاختصارات)، قسم «أنواع المتغيرات» في الدليل، خطوط عربية بـ`@font-face` ذكي (لاتيني من Segoe/Helvetica وعربي من أفضل خط مثبّت)، عزل المقاطع اللاتينية بـ`<bdi>` عبر `isolateLatin`، منع الخط المائل للعربية | ✅ |
 | 5 (جزء 1) | **معالج اختيار الاختبار** (Alt+T)؛ **مان–ويتني، ويلكوكسون، كروسكال–واليس**؛ **الانحدار الخطي المتعدد** (B وBeta وCI وVIF وDurbin-Watson)؛ **ثبات ألفا كرونباخ**؛ **فحص الاعتدالية Shapiro–Wilk**؛ وصيغ «فسّر نتائجي» لكلٍّ منها | ✅ مطابقة scipy (34 فحصاً) + تكامل (25) + معالج (18) + واجهة (13) |
 | 4 (واجهة) | شريط أدوات أكبر (26px) بتسميات وتلميحات متحركة ومجموعات ملوّنة؛ زر **Ask Miss Dalia** في شريط العنوان بانتقال سريع؛ منتقي الرسوم | ✅ 36 فحص واجهة |
 
@@ -37,6 +39,14 @@
 - `config.js`: `ASK_DALIA_URL` مضبوط على https://askmissdalia.rf.gd/?i=3 (إن تُرك فارغاً يعرض الزر رسالة في شريط الحالة). الصورة في `assets/dalia-128.png` و`dalia-256.png`. يُفتح الرابط في تبويب جديد كي لا تضيع بيانات المستخدم.
 - الشريط: `TB` صار `[أيقونة، أمر، عربي، English، اختصار، تسمية قصيرة ع، تسمية قصيرة En، مرحلة]`. الألوان من `.g0…g3` والتدرجات `#tg0…tg3` في `index.html`.
 - اختصار جديد: `Alt+E` (فسّر نتائجي).
+
+### نموذج المتغيرات (مهم لتجهيز البيانات القادم)
+- `var.type` = نوع **التخزين** فقط (`Numeric`|`String`) وتعتمد عليه كل التحاليل؛ `var.fmt` = **شكل العرض والإدخال** (أحد `FORMATS`). المشاريع القديمة بلا `fmt` تعمل (`fmtOf` يرجع إلى `type`).
+- التاريخ يُخزَّن **عدداً** = أيام منذ 1970-01-01 (UTC) ويُعرض بالنمط المختار؛ `parseDate/fmtDate` في `data.js`. Restricted Number يُعرض بأصفار بادئة بعرض `width`. العملة المخصصة: `var.cur`.
+- حقول جديدة: `columns` (عرض عمود Data View ≈ columns×8+36 بكسل)، و`align` (`Left|Right|Center`).
+- تغيير النوع من Variable View يحوّل البيانات ويدعم التراجع (`setVar(i,'type',fmt)`)؛ تصدير CSV يكتب التواريخ بصيغة ISO.
+- حدود معروفة: لا نمط تاريخ بالوقت (datetime)، ولا نوافذ تعريف **Values/Missing** على طريقة SPSS (ما زالت حقولاً نصية).
+- **الخطوط:** لا يمكن تضمين خط عربي دون تنزيله؛ يعمل الآن `local()` فقط. لتضمين خط (Cairo/IBM Plex Sans Arabic) ضع ملف woff2 في `fonts/` وأضف `url()` إلى `@font-face{font-family:"SA"}` العربي في آخر `styles.css`.
 
 ### ما أُضيف في المرحلة 5 (الجزء 1) — للمطوّر القادم
 - `stats.js` (القسم الأخير): `mannWhitney, wilcoxon, kruskal, linreg, cronbach, shapiroWilk, qnorm`. **كلها مطابقة لـ scipy** (التثبيت بـ `tests/fixtures5.json` المولَّد من scipy 1.17). الارتباط التام يرمي `Error('collinear')`.
@@ -91,9 +101,10 @@
 ## 6) التشغيل والاختبار
 ```
 python3 -m http.server 8000        # ثم افتح http://localhost:8000
-node tests/data.test.mjs && node tests/stats.test.mjs && node tests/analyses.test.mjs && node tests/xlsx.test.mjs && node tests/report.test.mjs && node tests/phase5.test.mjs && node tests/wizard.test.mjs && node tests/phase5.analyses.test.mjs
+node tests/data.test.mjs && node tests/stats.test.mjs && node tests/analyses.test.mjs && node tests/xlsx.test.mjs && node tests/report.test.mjs && node tests/phase5.test.mjs && node tests/wizard.test.mjs && node tests/phase5.analyses.test.mjs && node tests/formats.test.mjs
 python3 tests/ui.smoke.py          # يحتاج playwright + chromium؛ 22 فحصاً؛ اللقطات في /tmp/shots
 python3 tests/ui.phase5.py         # 13 فحصاً للمعالج والتحاليل الجديدة؛ اللقطات في /tmp/shots5
+python3 tests/ui.vars.py           # 20 فحصاً لـ Variable View واللغة؛ اللقطات في /tmp/shots6
 ```
 **تنبيه:** كانت النسخة السابقة من هذا الملف تذكر `tests/charts.test.mjs` و`tests/explain.test.mjs` وأن `ui.smoke.py` يضم 36 فحصاً، لكنها **غير موجودة** في الأرشيف المسلَّم (والموجود 22 فحصاً). الأولوية القادمة: كتابة اختبارات الرسوم (`charts.js`) واختبارات «فسّر نتائجي» للتحاليل القديمة (تغطّي التحاليل الجديدة `phase5.analyses.test.mjs` فقط).
 ```

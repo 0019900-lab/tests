@@ -1,6 +1,11 @@
 // StatLab – اللغة والمصطلحات | Language & terminology
 // T(ar,en) يرجّع النص حسب لغة الواجهة الحالية. آمن للاستخدام داخل Node.
 export const lang=()=>globalThis.document?.documentElement?.lang==='en'?'en':'ar';
+// يعزل المقاطع اللاتينية (مصطلحات، اختصارات، أرقام) داخل النص العربي بـ <bdi> فلا تنقلب علامات الترقيم والأقواس
+const LAT=/[A-Za-z0-9][A-Za-z0-9’'+\-\/_%²]*(?:[ .,=:][A-Za-z0-9][A-Za-z0-9’'+\-\/_%²]*)*/g,SKIP='bdi,kbd,svg,script,style,input,textarea,select,option,table,code,.tw,.apa';
+export function isolateLatin(root){if(!root||globalThis.document?.documentElement?.lang!=='ar')return;const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),L=[];
+ while(w.nextNode()){const n=w.currentNode;if(/[\u0600-\u06FF]/.test(n.nodeValue)&&/[A-Za-z0-9]/.test(n.nodeValue)&&!(n.parentElement&&n.parentElement.closest(SKIP)))L.push(n)}
+ for(const n of L){const t=n.nodeValue,f=document.createDocumentFragment();let p=0;t.replace(LAT,(m,off)=>{if(off>p)f.append(t.slice(p,off));const b=document.createElement('bdi');b.textContent=m;f.append(b);p=off+m.length;return m});if(p<t.length)f.append(t.slice(p));n.replaceWith(f)}}
 export const T=(ar,en)=>lang()==='ar'?ar:(en??ar);
 // قاموس المصطلحات الموحّد: [عربي، English، شرح مبسّط عربي، plain English]
 // ملاحظة: نتائج التحاليل بتفضل بمصطلحات SPSS الإنجليزية (معيار النشر العلمي)، والواجهة بتعرض الاثنين.

@@ -35,6 +35,7 @@ header.rp{display:flex;align-items:center;gap:12px;border-bottom:3px solid #5b4b
 .nt{font-size:12px;color:#555;margin-top:4px}.apaline{margin-top:8px;padding:8px 12px;background:#eef2ff;border-radius:8px;font-size:12.5px}.txt p{margin:0;padding:8px 12px;background:#fffbe6;border-inline-start:4px solid #f5c518;border-radius:6px}
 svg{max-width:100%;height:auto}.fig{margin:14px 0;break-inside:avoid-page}.fw{margin-top:6px}.fw img{max-width:100%;height:auto}
 .xpl{margin-top:12px;padding:10px 14px;border:1px solid #c7d2fe;border-inline-start:4px solid #6d5dfc;background:#f5f3ff;border-radius:10px;font-size:12.5px;line-height:1.7}.xpl .xh{font-weight:700;color:#4338ca;margin-bottom:2px}.xpl h5{margin:8px 0 2px;font-size:12.5px;color:#4338ca}.xpl p{margin:0}.xpl ul{margin:0;padding-inline-start:18px}
+[dir=rtl] .nt i,[dir=rtl] .tn{font-style:normal}[dir=rtl] .nt i{font-weight:700}bdi{unicode-bidi:isolate}
 @media print{body{margin:0;max-width:none}.xpl{background:none}.apaline{background:none;border:1px solid #bbb}}`;
 export function docHTML(items,o={}){const en=o.lang==='en',d=new Date().toLocaleString(en?'en-GB':'ar-EG');
  return`<!doctype html><html lang="${en?'en':'ar'}" dir="${en?'ltr':'rtl'}"><head><meta charset="utf-8"><title>Smart-Analysis – ${en?'Output':'المخرجات'}</title><style>${REPORT_CSS}</style></head><body><header class="rp"><b>Smart-Analysis</b><span>${en?'Analysis output':'تقرير المخرجات'}</span><small>${esc(d)}</small></header>${itemsHTML(items,o)}</body></html>`}

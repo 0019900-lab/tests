@@ -1,6 +1,6 @@
 // Smart-Analysis – معالج اختيار الاختبار (المرحلة 5): أسئلة مبسّطة ← الاختبار المناسب مع السبب والافتراضات.
 // recommend(a) دالة نقية (بدون DOM) قابلة للاختبار؛ واجهة المعالج في النصف الثاني من الملف.
-import {T,lang} from './i18n.js';import {ic} from './icons.js';
+import {T,lang,isolateLatin} from './i18n.js';import {ic} from './icons.js';
 const N=(ar,en)=>[ar,en];
 export const TESTS={
  ttest1:N('اختبار T لعينة واحدة','One-Sample T Test'),ttestInd:N('اختبار T لعينتين مستقلتين','Independent-Samples T Test'),ttestPair:N('اختبار T لعينتين مرتبطتين','Paired-Samples T Test'),anova:N('تحليل التباين الأحادي (ANOVA)','One-Way ANOVA'),
@@ -39,7 +39,7 @@ export function openWizard(act){if(document.querySelector('.wiz'))return;const o
  const draw=()=>{const k=nextQuestion(a),ar=lang()==='ar',tt=p=>ar?p[0]:p[1];let h=`<div class="dlg gp wz" dir="${document.documentElement.dir}"><h3>${ic('learn',20)} ${T('معالج اختيار الاختبار','Test selection wizard')}</h3><div class="wzb">`;
   if(k){const Q=QUESTIONS[k];h+=`<p class="wq">${tt(Q.q)}</p><div class="wopts">${Q.o.filter(o=>!(k==='measure'&&a.goal==='compare'&&false)).map(([v,l,i],x)=>`<button data-k="${k}" data-v="${v}" style="--d:${x*35}ms">${ic(i,22)}<span>${tt(l)}</span></button>`).join('')}</div>`}
   else{const r=recommend(a);h+=`<div class="wres"><small>${T('الاختبار المقترح','Recommended test')}</small><h4>${tt(r.test)}</h4><p>${tt(r.why)}</p>${r.soon?`<p class="wsoon">${ic('clock',14)} ${tt(r.soon)}</p>`:''}${r.checks.length?`<h5>${T('تحقق من الافتراضات','Check the assumptions')}</h5><ul>${r.checks.map(c=>`<li>${tt(c)}</li>`).join('')}</ul>`:''}${r.alt?`<div class="walt">${ic('info',16)} <span>${tt(r.alt.when)} <b>(${tt(TESTS[r.alt.id])})</b></span></div>`:''}</div><div class="wact"><button class="go" data-run="${r.id}">${T('افتح الاختبار','Open the test')}</button>${r.pre?`<button class="cx" data-run="normality">${T('افحص الاعتدالية أولاً','Check normality first')}</button>`:''}${r.alt?`<button class="cx" data-run="${r.alt.id}">${T('افتح البديل','Open the alternative')}</button>`:''}</div>`}
-  h+=`</div><div class="dfoot">${hist.length?`<button class="cx" data-back>${T('رجوع','Back')}</button>`:''}<button class="cx" data-x>${T('إغلاق','Close')}</button></div></div>`;ov.innerHTML=h;ov.querySelector('button')&&ov.querySelector('button').focus()};
+  h+=`</div><div class="dfoot">${hist.length?`<button class="cx" data-back>${T('رجوع','Back')}</button>`:''}<button class="cx" data-x>${T('إغلاق','Close')}</button></div></div>`;ov.innerHTML=h;isolateLatin(ov);ov.querySelector('button')&&ov.querySelector('button').focus()};
  ov.onclick=e=>{const b=e.target.closest('button');if(e.target===ov||(b&&b.dataset.x!==undefined))return ov.remove();if(!b)return;
   if(b.dataset.v){hist.push({...a});a[b.dataset.k]=b.dataset.v;draw()}else if(b.dataset.back!==undefined){a=hist.pop()||{};draw()}else if(b.dataset.run){ov.remove();act[b.dataset.run]&&act[b.dataset.run]()}};
  ov.addEventListener('keydown',e=>{if(e.key==='Escape')ov.remove()});document.body.append(ov);draw()}

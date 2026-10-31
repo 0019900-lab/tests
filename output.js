@@ -1,5 +1,5 @@
 // StatLab – عارض المخرجات (المرحلة 3): جداول APA، ملاحظات، فهرس، تصدير HTML / Word / PDF / Markdown / Excel
-import {T,lang} from './i18n.js';
+import {T,lang,isolateLatin} from './i18n.js';
 import {ic} from './icons.js';
 import {esc,tableHTML,figHTML,explainHTML,itemsHTML,docHTML,wordHTML,toMarkdown,toTSV,sheetsAOA} from './report.js';
 import {explain} from './explain.js';import {chartSVG} from './charts.js';
@@ -30,7 +30,7 @@ function render(){const b=$('#outputBody'),o=opts();
   if(!it.collapsed){h+=it.tables.map(t=>tableHTML(t,++n,o)).join('');if(it.apa&&it.apa.length)h+=`<div class="apa"><div class="ah"><b>APA</b><button class="cp" data-act="copyapa" title="${T('نسخ سطر APA','Copy APA line')}">${ic('copy',14)}</button></div>${[].concat(it.apa).map(esc).join('<br>')}</div>`;if(it.explain)h+=explainHTML(it,o)}
   else n+=it.tables.length;
   h+='</section>'});
- b.innerHTML=h;b.classList.toggle('apa-on',apa);b.querySelectorAll('.cp').forEach(x=>{if(!x.querySelector('svg'))x.innerHTML=ic('copy',14)});outline()}
+ b.innerHTML=h;b.classList.toggle('apa-on',apa);b.querySelectorAll('.cp').forEach(x=>{if(!x.querySelector('svg'))x.innerHTML=ic('copy',14)});isolateLatin(b);outline()}
 const xbtn=it=>explain(it,'en')?`<button class="xb${it.explain?' on':''}" data-act="explain" title="${T('اشرح هذه النتيجة بلغة بسيطة','Explain this result in plain language')}">${ic('sparkle',14)}<span>${T('فسّر نتائجي','Explain')}</span></button>`:'';
 const ctl=it=>`<span class="ctl"><button data-act="up" title="${T('للأعلى','Move up')}">${ic('up',14)}</button><button data-act="down" title="${T('للأسفل','Move down')}">${ic('down',14)}</button><button data-act="del" title="${T('حذف','Delete')}">${ic('trash',14)}</button></span>`;
 function outline(){const o=$('#outline');if(!o)return;

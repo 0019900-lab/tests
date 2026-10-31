@@ -290,3 +290,28 @@ kbd{font:11px ui-monospace,Consolas,monospace;background:var(--head);border:1px 
 
 /* شعار أكبر في الزاوية */
 .brand{gap:12px}.brand .mark{filter:drop-shadow(0 3px 8px rgba(31,111,235,.3))}.wm{font-size:25px}#titlebar{padding:5px 24px}
+
+#grid td.a-l{text-align:left!important}#grid td.a-r{text-align:right!important}#grid td.a-c{text-align:center!important}
+#varGrid select{min-width:150px}#varGrid td input[data-f=columns]{min-width:64px}
+
+/* ===== v0.7: خطوط عربية وتنظيم النص ===== */
+/* اللاتيني من Segoe UI/Helvetica والعربي من أفضل خط عربي مثبّت (يتم الاختيار تلقائياً بحسب المتاح على جهازك) */
+@font-face{font-family:"SA";src:local("Segoe UI Variable Text"),local("Segoe UI"),local("SF Pro Text"),local("Helvetica Neue"),local("Roboto"),local("Arial");unicode-range:U+0000-024F,U+2000-206F,U+20A0-20CF,U+2190-21FF,U+2200-22FF}
+@font-face{font-family:"SA";src:local("IBM Plex Sans Arabic"),local("Noto Sans Arabic"),local("Noto Kufi Arabic"),local("Cairo"),local("Tajawal"),local("Almarai"),local("SF Arabic"),local("Segoe UI Variable Text"),local("Segoe UI"),local("Geeza Pro"),local("Tahoma");unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+FB50-FDFF,U+FE70-FEFF}
+html[lang=ar] body,html[lang=ar] button,html[lang=ar] input,html[lang=ar] select,html[lang=ar] textarea{font-family:"SA","Segoe UI","Noto Sans Arabic",Tahoma,"DejaVu Sans",system-ui,sans-serif;letter-spacing:0;word-spacing:.05em;font-feature-settings:"kern","liga","calt";text-rendering:optimizeLegibility}
+html[lang=ar] body{font-size:15px;line-height:1.7}
+html[lang=ar] h2,html[lang=ar] h3,html[lang=ar] h4{line-height:1.5;font-weight:700}
+html[lang=ar] .dd button,html[lang=ar] .gnav button,html[lang=ar] .wopts button span,html[lang=ar] .st p,html[lang=ar] .fc p{line-height:1.65}
+html[lang=ar] .menu>button{font-size:15px}html[lang=ar] #toolbar button{font-size:12.5px}
+html[lang=ar] .gbody p,html[lang=ar] .gr p,html[lang=ar] .lead{line-height:1.9;text-align:start}
+html[lang=ar] .xpl,html[lang=ar] .xpl li,html[lang=ar] .xpl p{line-height:1.95;text-align:start}
+/* لا خط مائل للعربية (الميل المصطنع يشوّه الحروف المتصلة) */
+html[lang=ar] i:not(.ic),html[lang=ar] em,html[lang=ar] .nt i,html[lang=ar] .tt,html[lang=ar] .cap .tt{font-style:normal}html[lang=ar] .nt i{font-weight:700}
+/* عزل المقاطع اللاتينية والاختصارات */
+bdi{unicode-bidi:isolate}kbd,.wm,.gr span,.fc small,.kk,.chip i,.tc{unicode-bidi:isolate}kbd,.kk{direction:ltr}
+.guide .gbody{text-wrap:pretty}.gbody h2{letter-spacing:0}
+.fc header b,.gr b{unicode-bidi:plaintext}
+.cards .fc footer{flex-wrap:wrap;line-height:1.6}
+
+.fc header>div{min-width:0}.fc header b{overflow-wrap:anywhere}.fc footer .ic{flex:none}
+#varGrid select{min-width:128px}#varGrid td:nth-child(2) select{min-width:170px}

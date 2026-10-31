@@ -1,12 +1,12 @@
 // Smart-Analysis – شاشة الترحيب + عن البرنامج
-import {T,lang} from './i18n.js';import {ic} from './icons.js';import {CHANGELOG} from './guide-data.js';
-export const VERSION='0.6.0',NAME='Smart-Analysis';
+import {T,lang,isolateLatin} from './i18n.js';import {ic} from './icons.js';import {CHANGELOG} from './guide-data.js';
+export const VERSION='0.7.0',NAME='Smart-Analysis';
 const L=(c,i)=>lang()==='ar'?c[1][i]:c[1][i+1];
 export function showWelcome(act,force){if(!force&&localStorage.welcome==='0')return;
  const ov=document.createElement('div');ov.className='dlgov wov';const first=CHANGELOG[0],news=[];for(let i=0;i<first[1].length;i+=2)news.push(L(first,i));
  const A=[['new','new',['بيانات جديدة','New dataset'],['ابدأ بجدول فارغ','Start with an empty table']],['open','open',['فتح ملف','Open file'],['CSV · Excel · مشروع محفوظ','CSV · Excel · saved project']],['demo','sparkle',['بيانات تجريبية','Demo data'],['100 ألف صف جاهزة','100k ready rows']],['guide','learn',['الدليل','Guide'],['تعلَّم في دقيقتين','Learn in 2 minutes']]];
  ov.innerHTML=`<div class="welcome" dir="${lang()==='ar'?'rtl':'ltr'}"><div class="wl"><img src="assets/logo.png" alt="${NAME}" width="200"><p>${T('تحليل إحصائي ذكي يشرح لك نتائجك','Smart statistics that explains your results')}</p></div><div class="wr"><button class="wx" title="Esc">${ic('close',18)}</button><h2>${T('كيف تودّ أن تبدأ؟','How would you like to start?')}</h2><div class="wa">${A.map(a=>`<button data-a="${a[0]}">${ic(a[1],26)}<b>${T(a[2][0],a[2][1])}</b><small>${T(a[3][0],a[3][1])}</small></button>`).join('')}</div><h3>${T('الجديد في الإصدار','What’s new in')} v${first[0]}</h3><ul>${news.map(n=>`<li>${n}</li>`).join('')}</ul><label class="nm"><input type="checkbox"> ${T('لا تعرض هذه الشاشة مرة أخرى','Don’t show this again')}</label></div></div>`;
- document.body.append(ov);const close=()=>{localStorage.welcome=ov.querySelector('.nm input').checked?'0':'1';ov.remove()};
+ document.body.append(ov);isolateLatin(ov);const close=()=>{localStorage.welcome=ov.querySelector('.nm input').checked?'0':'1';ov.remove()};
  ov.addEventListener('click',e=>{if(e.target===ov||e.target.closest('.wx'))return close();const b=e.target.closest('[data-a]');if(b){close();act[b.dataset.a]&&act[b.dataset.a]()}});
  ov.addEventListener('keydown',e=>{if(e.key==='Escape')close()});ov.tabIndex=0;ov.focus()}
 export function showAbout(){const ov=document.createElement('div');ov.className='dlgov wov';
