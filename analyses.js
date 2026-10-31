@@ -11,7 +11,16 @@ function missSet(v){if(!v.missing)return null;const s=new Set();for(const t of v
 // مرشّح «اختيار الحالات»: قناع منطقي بطول عدد الحالات؛ تُعدّ الحالات المستبعدة مفقودة في كل التحاليل (raw=true يتجاهله، لتجهيز البيانات)
 let FILT=null;
 export const getFilter=()=>FILT&&FILT.mask.length===store.n?FILT:null;
-export const setFilter=f=>{FILT=f;if(typeof document!=='undefined')document.dispatchEvent(new CustomEvent('sa:filter'))};
+export const setFilter=(f,silent)=>{FILT=f;if(!silent)evt()};
+const evt=()=>{if(typeof document!=='undefined')document.dispatchEvent(new CustomEvent('sa:filter'))};
+// «تقسيم الملف»: يُشغَّل كل تحليل لكل مجموعة على حدة (Organize output by groups)
+let SPL=null;
+export const getSplit=()=>SPL&&SPL.vars.every((c,i)=>store.vars[c]&&store.vars[c].name===SPL.names[i])?SPL:null;
+export const setSplit=s=>{SPL=s;evt()};
+export function splitGroups(vars){const cs=vars.map(c=>col(c)),m=new Map(),N=store.n;
+ for(let r=0;r<N;r++){const ks=cs.map(a=>a[r]);if(ks.some(x=>x===null))continue;const key=JSON.stringify(ks);if(!m.has(key))m.set(key,{vals:ks,rows:[]});m.get(key).rows.push(r)}
+ const gs=[...m.values()],cm=vars.map(c=>cmp(store.vars[c]));gs.sort((a,b)=>{for(let i=0;i<vars.length;i++){const d=cm[i](a.vals[i],b.vals[i]);if(d)return d}return 0});
+ return gs.map(g=>{const mask=new Array(N).fill(false);for(const r of g.rows)mask[r]=true;return{mask,n:g.rows.length,label:vars.map((c,i)=>`${store.vars[c].name} = ${lab(labelMap(store.vars[c]),g.vals[i])}`).join(', ')}})}
 export function col(c,raw){const v=store.vars[c],a=store.cols[c],ms=missSet(v),out=new Array(store.n),F=raw?null:getFilter(),mk=F&&F.mask;for(let r=0;r<store.n;r++){let x=a[r];if(x==null||x===''||(ms&&ms.has(x))||(mk&&!mk[r]))x=null;out[r]=x}return out}
 function labelMap(v){const m=new Map();for(const p of(v.values||'').split(/[;\n]+/)){const i=p.indexOf('=');if(i<0)continue;const k=p.slice(0,i).trim(),l=p.slice(i+1).trim();m.set(v.type==='Numeric'?parseNum(k):k,l)}return m}
 const lab=(m,x)=>m.has(x)?m.get(x):String(x);
@@ -132,6 +141,13 @@ RUN.kruskal=v=>{const F=store.vars[v.factor],fl=labelMap(F),rk=[],ts=[],apa=[],f
   ff.push({name:V.name,N:r.N,H:r.H,df:r.df,p:r.p,eps2:r.eps2,groups:keys.map((k,i)=>({label:lab(fl,k),n:r.n[i],mr:r.mr[i]}))});apa.push(`${V.name}: H(${r.df}) = ${fx(r.H,2)}, ${apaP(r.p)}, ε² = ${fx(r.eps2,2)}`)}
  return{title:`Kruskal-Wallis H Test by ${F.name}`,facts:{k:'kw',factor:F.name,tests:ff},tables:[{cap:'Ranks',head:['',F.name,'N','Mean Rank'],rows:rk,lc:2},{cap:'Test Statistics (tie-corrected)',head:['','Kruskal-Wallis H','df','Asymp. Sig.','ε²'],rows:ts,note:'ε² = H / (N − 1).'},...extra],apa}};
 const fb=x=>{if(!Number.isFinite(x))return'';const a=Math.abs(x);return a===0||a>=.1?fx(x,3):x.toPrecision(3)};
+const diagTable=(d,r)=>{const sw=d.sw,okn=Number.isFinite(sw.p),ok=(p,a,b)=>p>.05?a:b;
+ return[{cap:'Residual diagnostics',head:['Check','Statistic','Sig.','Reading'],rows:[
+  ['Normality of residuals (Shapiro-Wilk)',okn?`W = ${fx(sw.W,3)}`:'—',okn?fp(sw.p):'—',okn?ok(sw.p,'Residuals look normal','Residuals depart from normality'):'Needs 3–5000 cases; use the Q-Q plot'],
+  ['Equal variance (Breusch-Pagan)',Number.isFinite(d.bp.LM)?`LM = ${fx(d.bp.LM,3)}, df = ${d.bp.df}`:'—',Number.isFinite(d.bp.p)?fp(d.bp.p):'—',Number.isFinite(d.bp.p)?ok(d.bp.p,'Variance looks constant','Variance is not constant (heteroscedasticity)'):''],
+  ['Independence (Durbin-Watson)',fx(r.dw,3),'',r.dw>=1.5&&r.dw<=2.5?'No strong autocorrelation':'Possible autocorrelation'],
+  ['Outliers (|standardized residual| > 3)',`max |z| = ${fx(d.maxZ,2)}`,'',d.out3?`${d.out3} case(s) beyond ±3`:'None beyond ±3']],
+  note:'Shapiro-Wilk and Breusch-Pagan become over-sensitive with very large samples; judge with a Q-Q plot of the residuals too.'}]};
 RUN.regression=v=>{const Y=store.vars[v.dep],ys=col(v.dep),xs=v.vars.map(c=>col(c)),X=xs.map(()=>[]),y=[];
  for(let i=0;i<store.n;i++){if(ys[i]===null||xs.some(a=>a[i]===null))continue;y.push(ys[i]);xs.forEach((a,j)=>X[j].push(a[i]))}
  const k=v.vars.length;if(y.length<k+3)throw new Error(T(`عدد الحالات الصالحة (${y.length}) قليل بالنسبة لـ ${k} متغيراً مستقلاً`,`Too few valid cases (${y.length}) for ${k} predictors`));
@@ -140,7 +156,7 @@ RUN.regression=v=>{const Y=store.vars[v.dep],ys=col(v.dep),xs=v.vars.map(c=>col(
  return{title:`Linear Regression: ${Y.name}`,facts:{k:'reg',dep:Y.name,n:r.n,kk:k,R2:r.R2,adj:r.adj,F:r.F,df1:k,df2:r.dfe,pF:r.pF,dw:r.dw,coefs:names.slice(1).map((nme,j)=>({name:nme,b:r.co[j+1].b,beta:r.co[j+1].beta,t:r.co[j+1].t,p:r.co[j+1].p,vif:r.vif?r.vif[j]:null}))},
   tables:[{cap:'Model Summary',head:['Dependent','N','R','R²','Adjusted R²','Std. Error of Estimate','Durbin-Watson'],rows:[[Y.name,r.n,fnz(r.R),fnz(r.R2),fnz(r.adj),fx(r.see,3),fx(r.dw,3)]]},
    {cap:'ANOVA',head:['','Sum of Squares','df','Mean Square','F','Sig.'],rows:[['Regression',fx(r.ssr,3),k,fx(r.msr,3),fx(r.F,3),fp(r.pF)],['Residual',fx(r.sse,3),r.dfe,fx(r.mse,3),'',''],['Total',fx(r.sst,3),r.n-1,'','','']]},
-   {cap:'Coefficients',head:['','B','Std. Error','Beta','t','Sig.','95% CI Lower','95% CI Upper','VIF'],rows:coef,note:'Listwise deletion. VIF > 5 suggests multicollinearity.'}],
+   {cap:'Coefficients',head:['','B','Std. Error','Beta','t','Sig.','95% CI Lower','95% CI Upper','VIF'],rows:coef,note:'Listwise deletion. VIF > 5 suggests multicollinearity.'},...(v.diag===false?[]:diagTable(S.residDiag(X,r.res,r.see),r))],
   apa:`R² = ${fnz(r.R2,2)}, F(${k}, ${r.dfe}) = ${fx(r.F,2)}, ${apaP(r.pF)}`}};
 RUN.logistic=v=>{const Y=store.vars[v.dep],ys=col(v.dep),xs=v.vars.map(c=>col(c)),X=xs.map(()=>[]),yy=[],lm=labelMap(Y);
  for(let i=0;i<store.n;i++){if(ys[i]===null||xs.some(a=>a[i]===null))continue;yy.push(ys[i]);xs.forEach((a,j)=>X[j].push(a[i]))}
@@ -169,7 +185,11 @@ RUN.normality=v=>{const rows=[],ff=[];for(const c of v.vars){const V=store.vars[
 const say=t=>{document.querySelector('#status').textContent=t};
 const one=['اختر متغيراً واحداً على الأقل','Pick at least one variable'];
 const open=(id,spec,fn)=>()=>{if(!store.vars.length){say(T('حمّل البيانات أولاً (ملف ← بيانات تجريبية)','Load data first (File → Demo data)'));return}
- dialog(id,spec,v=>{const t0=performance.now(),b=RUN[fn](v);addBlock(b.title,b.tables,b.apa,b.facts);say(`${b.title} — ${Math.round(performance.now()-t0)} ms`)})};
+ dialog(id,spec,v=>{const t0=performance.now(),sp=getSplit();
+  if(!sp){const b=RUN[fn](v);addBlock(b.title,b.tables,b.apa,b.facts);say(`${b.title} — ${Math.round(performance.now()-t0)} ms`);return}
+  const base=getFilter(),gs=splitGroups(sp.vars);if(!gs.length)throw new Error(T('لا توجد مجموعات صالحة للتقسيم','No valid split groups'));let ok=0,skipped=[],first=null;
+  try{for(const g of gs){setFilter({mask:g.mask,n:g.n,desc:'split'},true);try{const b=RUN[fn](v);addBlock(`${b.title} — ${g.label}`,b.tables,b.apa,b.facts);ok++}catch(e){skipped.push(g.label);first=first||e}}}finally{setFilter(base,true)}
+  if(!ok)throw first;say(T(`اكتمل التحليل لـ ${ok} مجموعة${skipped.length?` (تعذّر في ${skipped.length}: ${skipped.join(' | ')})`:''}`,`Done for ${ok} group(s)${skipped.length?` (skipped ${skipped.length}: ${skipped.join(' | ')})`:''}`))})};
 const chk=(key,label,def)=>({key,type:'check',label,def});
 // ---------- الرسوم (المرحلة 4) ----------
 const nm=c=>store.vars[c].name,few=(a,n)=>{if(a.length<n)throw new Error(T(`عدد القيم الصالحة قليل (${a.length})`,`Too few valid values (${a.length})`))};
@@ -211,7 +231,7 @@ export const A={
  mannwhitney:open('mw',{title:['اختبار مان–ويتني (U)','Mann-Whitney U Test'],fields:[{key:'vars',label:['المتغيرات التابعة','Test variables'],multi:true,num:true},{key:'group',label:['متغير التجميع','Grouping variable']}],options:[{key:'g1',type:'text',label:['قيمة المجموعة 1 (اتركها فارغة إن كان في المتغير قيمتان فقط)','Group 1 value (blank if only 2 values)'],def:''},{key:'g2',type:'text',label:['قيمة المجموعة 2','Group 2 value'],def:''}],need:v=>!v.vars.length?one:v.group<0?['اختر متغير التجميع','Pick the grouping variable']:v.vars.includes(v.group)?['يجب ألا يكون متغير التجميع تابعاً','Grouping variable cannot be a test variable']:''},'mannwhitney'),
  wilcoxon:open('wx',{title:['اختبار ويلكوكسون للرتب الإشارية','Wilcoxon Signed-Rank Test'],fields:[{key:'a',label:['المتغير الأول','Variable 1'],num:true},{key:'b',label:['المتغير الثاني','Variable 2'],num:true}],options:[],need:v=>v.a<0||v.b<0?['اختر المتغيرين','Pick both variables']:v.a===v.b?['اختر متغيرين مختلفين','Pick two different variables']:''},'wilcoxon'),
  kruskal:open('kw',{title:['اختبار كروسكال–واليس','Kruskal-Wallis H Test'],fields:[{key:'vars',label:['المتغيرات التابعة','Dependent variables'],multi:true,num:true},{key:'factor',label:['العامل (المجموعات)','Factor']}],options:[{key:'dunn',type:'check',label:['مقارنات Dunn البعدية (تصحيح بونفروني) عند 3 مجموعات فأكثر','Dunn pairwise post hoc (Bonferroni) for 3+ groups'],def:true}],need:v=>!v.vars.length?one:v.factor<0?['اختر العامل','Pick the factor']:v.vars.includes(v.factor)?['يجب ألا يكون العامل تابعاً','Factor cannot be a dependent variable']:''},'kruskal'),
- regression:open('rg',{title:['الانحدار الخطي','Linear Regression'],fields:[{key:'dep',label:['المتغير التابع','Dependent variable'],num:true},{key:'vars',label:['المتغيرات المستقلة','Independent variables'],multi:true,num:true}],options:[],need:v=>v.dep<0?['اختر المتغير التابع','Pick the dependent variable']:!v.vars.length?one:v.vars.includes(v.dep)?['يجب ألا يكون المتغير التابع بين المستقلة','The dependent variable cannot also be an independent variable']:''},'regression'),
+ regression:open('rg',{title:['الانحدار الخطي','Linear Regression'],fields:[{key:'dep',label:['المتغير التابع','Dependent variable'],num:true},{key:'vars',label:['المتغيرات المستقلة','Independent variables'],multi:true,num:true}],options:[chk('diag',['فحص البواقي (اعتدال، تجانس التباين، قيم شاذة)','Residual diagnostics (normality, equal variance, outliers)'],true)],need:v=>v.dep<0?['اختر المتغير التابع','Pick the dependent variable']:!v.vars.length?one:v.vars.includes(v.dep)?['يجب ألا يكون المتغير التابع بين المستقلة','The dependent variable cannot also be an independent variable']:''},'regression'),
  logistic:open('lg',{title:['الانحدار اللوجستي الثنائي','Binary Logistic Regression'],fields:[{key:'dep',label:['المتغير التابع (قيمتان فقط؛ الأعلى = الحدث)','Dependent variable (two values; higher = event)']},{key:'vars',label:['المتغيرات المستقلة (رقمية)','Independent variables (numeric)'],multi:true,num:true}],options:[{key:'cut',type:'num',label:['قيمة القطع للتصنيف','Classification cut value'],def:.5}],need:v=>v.dep<0?['اختر المتغير التابع','Pick the dependent variable']:!v.vars.length?one:v.vars.includes(v.dep)?['يجب ألا يكون المتغير التابع بين المستقلة','The dependent variable cannot also be an independent variable']:(v.cut<=0||v.cut>=1)&&v.cut!==0?['قيمة القطع بين 0 و1','Cut value must be between 0 and 1']:''},'logistic'),
  alpha:open('al',{title:['ثبات المقياس (ألفا كرونباخ)','Reliability (Cronbach’s Alpha)'],fields:[{key:'vars',label:['بنود المقياس (متغيرات رقمية)','Scale items (numeric variables)'],multi:true,num:true}],options:[],need:v=>v.vars.length<2?['اختر بندين على الأقل','Pick at least two items']:''},'alpha'),
  normality:open('nm',{title:['فحص الاعتدالية (Shapiro–Wilk)','Normality check (Shapiro-Wilk)'],fields:[{key:'vars',label:['المتغيرات الرقمية','Numeric variables'],multi:true,num:true}],options:[],need:v=>v.vars.length?'':one},'normality')};

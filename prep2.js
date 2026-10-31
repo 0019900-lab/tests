@@ -2,7 +2,7 @@
 // المحركات (buildMask / fillMissing / binCuts / binOf) دوال نقية قابلة للاختبار؛ الواجهة في آخر الملف.
 import {T} from './i18n.js';
 import {store,replaceAll} from './data.js';
-import {col,getFilter,setFilter} from './analyses.js';
+import {col,getFilter,setFilter,getSplit,setSplit,splitGroups} from './analyses.js';
 import {compileExpr,colGetter,uniqueName,typedVar} from './transform.js';
 import {dialog} from './dialog.js';
 const bad=(a,e)=>{throw new Error(T(a,e))};
@@ -50,11 +50,19 @@ export function binLabels(cuts){const L=[`≤ ${nf(cuts[0])}`];for(let i=1;i<cut
 const say=t=>{const s=document.querySelector('#status');if(s)s.textContent=t};
 const need=()=>{if(!store.vars.length){say(T('حمّل البيانات أولاً (ملف ← بيانات تجريبية)','Load data first (File → Demo data)'));return false}return true};
 function addVars(newVars,newCols){replaceAll({name:store.name,vars:[...store.vars,...newVars],cols:[...store.cols,...newCols],n:store.n},false)}
-function badge(){let b=document.querySelector('#fltBadge');const f=getFilter();
- if(!b){const ft=document.querySelector('#statusbar');if(!ft)return;b=document.createElement('button');b.id='fltBadge';b.type='button';b.onclick=()=>TR2.select();ft.insertBefore(b,ft.children[1]||null)}
- b.hidden=!f;if(f)b.textContent=T(`مرشَّح: ${f.n.toLocaleString()} من ${store.n.toLocaleString()} حالة`,`Filter on: ${f.n.toLocaleString()} of ${store.n.toLocaleString()} cases`);if(f)b.title=f.desc}
+function badge(){const mk=(id,fn)=>{let b=document.querySelector('#'+id);if(!b){const ft=document.querySelector('#statusbar');if(!ft)return null;b=document.createElement('button');b.id=id;b.type='button';b.className='sbadge';b.onclick=fn;ft.insertBefore(b,ft.children[1]||null)}return b};
+ const f=getFilter(),sp=getSplit(),bf=mk('fltBadge',()=>TR2.select()),bs=mk('splitBadge',()=>TR2.split());if(!bf||!bs)return;
+ bf.hidden=!f;if(f){bf.textContent=T(`مرشَّح: ${f.n.toLocaleString()} من ${store.n.toLocaleString()} حالة`,`Filter on: ${f.n.toLocaleString()} of ${store.n.toLocaleString()} cases`);bf.title=f.desc}
+ bs.hidden=!sp;if(sp){bs.textContent=T(`مقسَّم حسب: ${sp.names.join('، ')}`,`Split by: ${sp.names.join(', ')}`);bs.title=T('كل تحليل يُشغَّل لكل مجموعة على حدة','Every analysis runs once per group')}}
 if(typeof document!=='undefined'){document.addEventListener('sa:filter',badge);badge()}
 export const TR2={
+ split(){if(!need())return;const cur=getSplit();
+  dialog('sp',{title:['تقسيم الملف','Split File'],fields:[{key:'vars',label:['قسّم حسب (متغير فئوي أو أكثر)','Split by (one or more categorical variables)'],multi:true}],options:[
+   {key:'mode',type:'sel',label:['الطريقة','Method'],def:cur?'off':'sep',opts:[['sep',['تحليل كل مجموعة على حدة','Run each analysis separately for each group']],['off',['إلغاء التقسيم (تحليل كل الحالات معاً)','Turn splitting off (analyse all cases together)']]]}],
+   need:v=>v.mode==='off'||v.vars.length?'':['اختر متغيراً واحداً على الأقل','Pick at least one variable']},
+  v=>{if(v.mode==='off'){setSplit(null);say(T('أُلغي تقسيم الملف','Split File is off'));return}
+   const gs=splitGroups(v.vars);if(!gs.length)throw new Error(T('لا توجد مجموعات صالحة','No valid groups'));if(gs.length>20)throw new Error(T(`عدد المجموعات كبير (${gs.length}) — اختر متغيراً بفئات أقل`,`Too many groups (${gs.length}) — pick a variable with fewer categories`));
+   setSplit({vars:v.vars,names:v.vars.map(c=>store.vars[c].name)});say(T(`قُسّم الملف إلى ${gs.length} مجموعة؛ كل تحليل سيُشغَّل لكل مجموعة (الرسوم لا تتأثر بعد)`,`File split into ${gs.length} group(s); each analysis now runs per group (charts are not affected yet)`))})},
  select(){if(!need())return;const cur=getFilter();
   dialog('sel',{title:['اختيار الحالات','Select Cases'],fields:[],options:[
    {key:'mode',type:'sel',label:['الطريقة','Method'],def:cur?'all':'cond',opts:[['all',['كل الحالات (إلغاء المرشّح)','All cases (turn the filter off)']],['cond',['بشرط (تعبير)','If condition is satisfied']],['random',['عيّنة عشوائية (نسبة مئوية)','Random sample (percentage)']],['range',['مدى من الحالات (من – إلى)','Range of cases (first – last)']]]},

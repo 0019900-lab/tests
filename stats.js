@@ -122,3 +122,9 @@ export function dunn(groups){const all=[].concat(...groups),N=all.length,r=ranks
  const v0=N*(N+1)/12-ts/(12*(N-1)),pairs=k*(k-1)/2,out=[];
  for(let i=0;i<k;i++)for(let j=i+1;j<k;j++){const z=(mr[i]-mr[j])/Math.sqrt(v0*(1/n[i]+1/n[j])),p=pNorm2(z);out.push({i,j,z,p,padj:Math.min(1,p*pairs)})}
  return out}
+
+// ---- فحص بواقي الانحدار: اعتدالية (Shapiro–Wilk)، تجانس التباين (Breusch–Pagan بصيغة Koenker)، قيم شاذة |z|>3 ----
+export function residDiag(X,res,see){const n=res.length,k=X.length,sw=shapiroWilk(res);let bp={LM:NaN,df:k,p:NaN};
+ try{const q=linreg(X,res.map(e=>e*e)),LM=n*q.R2;bp={LM,df:k,p:pChi(LM,k)}}catch{}
+ let maxZ=0,out3=0;for(const e of res){const z=Math.abs(e/see);if(z>maxZ)maxZ=z;if(z>3)out3++}
+ return{sw,bp,maxZ,out3,n}}
