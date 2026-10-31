@@ -471,3 +471,31 @@ bdi{unicode-bidi:isolate}kbd,.wm,.gr span,.fc small,.kk,.chip i,.tc{unicode-bidi
 .about .chk{color:var(--acc);background:var(--acc2);border-radius:8px;padding:5px 12px;font-weight:600;font-size:12.5px}.about .chkr{font-size:12px;color:var(--mute)}
 @media(max-width:800px){.goals{grid-template-columns:1fr 1fr}.guide .hero{flex-direction:column}}
 @media(prefers-reduced-motion:reduce){.goal,.seg button{transition:none}.goal:hover{transform:none}}
+
+/* ===== v0.12.1: توحيد الأيقونات والتسميات + شريط أدوات هادئ بلون واحد ===== */
+:root{--lbl:12px;--tile:40px;--ico:22px}
+#toolbar{gap:0;padding:6px 12px;align-items:stretch;background:var(--panel)}
+#toolbar .grp{display:flex;gap:2px;padding:0 10px;margin:0;background:transparent;border:0;border-radius:0;box-shadow:none;border-inline-end:1px solid var(--line)}
+#toolbar .grp:last-of-type{border-inline-end:0}
+#toolbar .grp button{min-width:62px;width:62px;height:auto;padding:6px 2px 5px;gap:4px;border-radius:12px}
+#toolbar .tile{width:var(--tile);height:var(--tile);border-radius:12px;background:var(--acc2);border:0;box-shadow:none}
+#toolbar .ti{width:var(--ico);height:var(--ico)}
+#toolbar .g0 .ti,#toolbar .g1 .ti,#toolbar .g2 .ti,#toolbar .g3 .ti{stroke:var(--acc)}
+#toolbar .g0 .ti .f,#toolbar .g1 .ti .f,#toolbar .g2 .ti .f,#toolbar .g3 .ti .f{fill:color-mix(in srgb,var(--acc) 16%,transparent)}
+#toolbar .grp .tl{display:block;font-size:var(--lbl);font-weight:600;line-height:1.15;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;color:var(--text);opacity:.78}
+#toolbar .grp button:hover{background:var(--hov)}
+#toolbar .grp button:hover .tile{background:var(--acc);box-shadow:0 4px 12px color-mix(in srgb,var(--acc) 35%,transparent);transform:none}
+#toolbar .grp button:hover .ti{stroke:#fff;transform:none}
+#toolbar .grp button:hover .ti .f{fill:rgba(255,255,255,.25)}
+#toolbar .grp button:hover .tl{color:var(--acc);opacity:1}
+#toolbar .grp button.soonit .tile{filter:none;opacity:.5}
+#toolbar .grp button.soonit .tl{opacity:.5}
+/* تسميات وأيقونات موحّدة في كل التطبيق */
+.ic{flex:none;vertical-align:middle}
+.menubtn,#menubar button{font-size:13.5px}
+.goal{min-height:116px}.goal>.ic{width:38px;height:38px;padding:8px;border-radius:12px;background:var(--acc2);color:var(--acc)}
+.goal i{font-size:var(--lbl)}.goal b{font-size:14px;line-height:1.4}.goal span{font-size:var(--lbl)}
+.guide .st .si{width:40px;height:40px;border-radius:12px;background:var(--acc2);color:var(--acc);display:flex;align-items:center;justify-content:center;flex:none}
+.ig{font-size:13px}.ig small{font-size:var(--lbl)}
+[data-theme=dark] #toolbar .tile{background:color-mix(in srgb,var(--acc) 16%,var(--panel))}
+@media(max-width:700px){#toolbar .grp{padding:0 4px}#toolbar .grp button{min-width:54px;width:54px}:root{--tile:36px;--ico:20px}}
