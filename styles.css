@@ -433,3 +433,6 @@ bdi{unicode-bidi:isolate}kbd,.wm,.gr span,.fc small,.kk,.chip i,.tc{unicode-bidi
 .dlg.cmp{width:min(620px,95vw)}.dlg.cmp textarea,.dlg.cmp input#cmT,.dlg.cmp input#cmC{width:100%;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);padding:7px 10px;font:13px/1.5 Consolas,"Cascadia Mono",monospace;resize:vertical}
 .chips{display:flex;flex-wrap:wrap;gap:5px;max-height:84px;overflow:auto}.chips button{border:1px solid var(--line);background:var(--head);border-radius:7px;padding:2px 9px;font:12px Consolas,monospace;color:var(--text)}.chips button:hover{background:var(--acc2);border-color:var(--acc);color:var(--acc)}.chips.fn button{color:var(--acc)}
 .dlg.cmp .hint{margin:8px 0 0;font-size:12px;color:var(--mute);line-height:1.7}
+
+/* v0.14: شارة المرشّح في شريط الحالة */
+#fltBadge{background:var(--acc2);color:var(--acc);border:1px solid var(--acc);border-radius:999px;padding:1px 12px;font-size:12px;font-weight:700;cursor:pointer}#fltBadge[hidden]{display:none}

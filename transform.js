@@ -3,7 +3,7 @@
 // كل عملية تبني حالة جديدة وتمررها إلى replaceAll(...,false) فيعمل التراجع/الإعادة تلقائياً.
 import {T} from './i18n.js';
 import {store,mkVar,replaceAll,validName} from './data.js';
-import {col} from './analyses.js';
+import {col,setFilter} from './analyses.js';
 import {dialog} from './dialog.js';
 
 // ================= 1) محلل التعبيرات الآمن =================
@@ -65,7 +65,7 @@ export function compileExpr(src,getCol,N=0){const tk=tokenize(String(src||'')),u
 
 // ================= 2) أدوات بناء الحالة =================
 const lookup=()=>{const m=new Map();store.vars.forEach((v,i)=>m.set(v.name.toLowerCase(),i));return m};
-function colGetter(){const m=lookup(),cache=new Map();return lc=>{if(!m.has(lc))return null;const i=m.get(lc);if(!cache.has(i))cache.set(i,col(i));return cache.get(i)}}
+function colGetter(){const m=lookup(),cache=new Map();return lc=>{if(!m.has(lc))return null;const i=m.get(lc);if(!cache.has(i))cache.set(i,col(i,true));return cache.get(i)}}
 const isInt=a=>a.every(x=>x===null||Number.isInteger(x));
 function uniqueName(base,taken){let n=base.replace(/[^\p{L}\p{N}_.@#$]/gu,'_');if(!/^[\p{L}@]/u.test(n))n='V'+n;let k=2,c=n;while(!validName(c)||taken.has(c.toLowerCase())){c=n+'_'+k++}taken.add(c.toLowerCase());return c}
 function typedVar(name,vals){const isStr=vals.some(x=>typeof x==='string'),v=mkVar(name,isStr?'String':'Numeric');
@@ -101,7 +101,7 @@ const hit=(t,x)=>t.k==='miss'?x===null:x===null?false:t.k==='range'?typeof x==='
 export function recodeValue(map,x,keepUnmatched){for(const r of map.rules)if(r.tests.some(t=>hit(t,x)))return r.to.t==='miss'?null:r.to.t==='copy'?x:r.to.v;
  if(map.els)return map.els.t==='miss'?null:map.els.t==='copy'?x:map.els.v;return keepUnmatched?x:null}
 export function recodeVars({vars,into,suffix,map}){const m=parseRecode(map),taken=new Set(store.vars.map(v=>v.name.toLowerCase())),vs=store.vars.slice(),cs=store.cols.slice(),done=[];
- for(const c of vars){const src=col(c),out=new Array(store.n);for(let r=0;r<store.n;r++)out[r]=recodeValue(m,src[r],into==='same');
+ for(const c of vars){const src=col(c,true),out=new Array(store.n);for(let r=0;r<store.n;r++)out[r]=recodeValue(m,src[r],into==='same');
   const o=store.vars[c],isStr=out.some(x=>typeof x==='string'),nv=typedVar(o.name,out);
   if(into==='same'){Object.assign(nv,{label:o.label,columns:o.columns,missing:'',values:''});vs[c]=nv;cs[c]=out;done.push(o.name)}
   else{const nm=uniqueName(o.name+(suffix||'_r'),taken);nv.name=nm;nv.label=o.label?`${o.label} (recoded)`:'';vs.push(nv);cs.push(out);done.push(nm)}}
@@ -109,7 +109,7 @@ export function recodeVars({vars,into,suffix,map}){const m=parseRecode(map),take
 
 // ================= 5) عكس ترميز البنود (يخدم ألفا كرونباخ) =================
 export function reverseItems({vars,min,max,suffix}){const taken=new Set(store.vars.map(v=>v.name.toLowerCase())),vs=store.vars.slice(),cs=store.cols.slice(),done=[];
- const cols=vars.map(c=>col(c));let lo=min,hi=max;if(lo===null||hi===null){lo=Infinity;hi=-Infinity;for(const a of cols)for(const x of a)if(typeof x==='number'){if(x<lo)lo=x;if(x>hi)hi=x}}
+ const cols=vars.map(c=>col(c,true));let lo=min,hi=max;if(lo===null||hi===null){lo=Infinity;hi=-Infinity;for(const a of cols)for(const x of a)if(typeof x==='number'){if(x<lo)lo=x;if(x>hi)hi=x}}
  if(!Number.isFinite(lo)||!Number.isFinite(hi)||lo>=hi)bad('تعذّر تحديد أدنى وأعلى قيمة للمقياس؛ أدخلهما يدوياً','Could not determine the scale minimum and maximum; enter them manually');
  vars.forEach((c,k)=>{const o=store.vars[c],out=cols[k].map(x=>typeof x==='number'?lo+hi-x:null),nv=typedVar(o.name,out),nm=uniqueName(o.name+(suffix||'_r'),taken);nv.name=nm;nv.label=o.label?`${o.label} (reversed)`:'(reversed)';nv.decimals=o.decimals;vs.push(nv);cs.push(out);done.push(nm)});
  replaceAll({name:store.name,vars:vs,cols:cs,n:store.n},false);return{done,lo,hi}}
@@ -117,7 +117,7 @@ export function reverseItems({vars,min,max,suffix}){const taken=new Set(store.va
 // ================= 6) ترتيب الحالات =================
 export function sortOrder(a,desc,isNum){const idx=Array.from({length:a.length},(_,i)=>i),dir=desc?-1:1;
  idx.sort((i,j)=>{const x=a[i],y=a[j];if(x===null||x===undefined||x==='')return(y===null||y===undefined||y==='')?i-j:1;if(y===null||y===undefined||y==='')return-1;const c=isNum?x-y:String(x).localeCompare(String(y));return c?c*dir:i-j});return idx}
-export function sortCases({by,desc}){const keys=by.map(c=>({a:store.cols[c],num:store.vars[c].type==='Numeric'}));let idx=Array.from({length:store.n},(_,i)=>i);
+export function sortCases({by,desc}){setFilter(null);const keys=by.map(c=>({a:store.cols[c],num:store.vars[c].type==='Numeric'}));let idx=Array.from({length:store.n},(_,i)=>i);
  // فرز مستقر متعدد المفاتيح: من آخر مفتاح إلى أول مفتاح
  for(let k=keys.length-1;k>=0;k--){const {a,num}=keys[k],sub=idx.map(i=>a[i]),ord=sortOrder(sub,desc,num);idx=ord.map(j=>idx[j])}
  replaceAll({name:store.name,vars:store.vars.slice(),cols:store.cols.map(c=>{const o=new Array(store.n);for(let r=0;r<store.n;r++)o[r]=c[idx[r]]??null;return o}),n:store.n},false)}
@@ -158,3 +158,5 @@ export const TR={
   options:[{key:'ord',type:'sel',label:['الاتجاه','Direction'],def:'asc',opts:[['asc',['تصاعدي','Ascending']],['desc',['تنازلي','Descending']]]}],need:v=>v.by.length?'':['اختر متغيراً واحداً على الأقل','Pick at least one variable']},
   v=>{sortCases({by:v.by,desc:v.ord==='desc'});refresh();say(T('تم ترتيب الحالات (يمكنك التراجع بـ Ctrl+Z)','Cases sorted (Ctrl+Z to undo)'))})}
 };
+
+export {colGetter,uniqueName,typedVar};

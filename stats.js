@@ -114,3 +114,11 @@ export function logistic(X,y,opt={}){const n=y.length,k=X.length,p=k+1,cols=[new
  let hl=null;if(n>=20){const ord=pr.map((v,i)=>i).sort((a,c)=>pr[a]-pr[c]),G=Math.min(10,Math.floor(n/5));let x2=0,used=0;for(let g=0;g<G;g++){const a=Math.round(g*n/G),c=Math.round((g+1)*n/G);let o1=0,e1=0,m=c-a;for(let q=a;q<c;q++){o1+=y[ord[q]];e1+=pr[ord[q]]}const o0=m-o1,e0=m-e1;if(e1>0)x2+=(o1-e1)**2/e1;if(e0>0)x2+=(o0-e0)**2/e0;used++}
   if(used>2)hl={chi:x2,df:used-2,p:pChi(x2,used-2),groups:used}}
  return{n,k,n1,n0,co,LL,m2,m20,chi,df:k,p:pChi(chi,k),cs,nag,mcf,cm,acc:(cm[0][0]+cm[1][1])/n,sens:cm[1][1]/n1,spec:cm[0][0]/n0,hl,iter:it,cut,pred:pr}}
+
+// ---- مقارنات Dunn البعدية بعد كروسكال–واليس (تصحيح الارتباطات + بونفروني) ----
+export function dunn(groups){const all=[].concat(...groups),N=all.length,r=ranks(all),n=groups.map(g=>g.length),k=groups.length,mr=[];let off=0;
+ for(const g of groups){let s=0;for(let i=0;i<g.length;i++)s+=r[off+i];off+=g.length;mr.push(s/g.length)}
+ const m=new Map();for(const x of all)m.set(x,(m.get(x)||0)+1);let ts=0;for(const t of m.values())ts+=t*t*t-t;
+ const v0=N*(N+1)/12-ts/(12*(N-1)),pairs=k*(k-1)/2,out=[];
+ for(let i=0;i<k;i++)for(let j=i+1;j<k;j++){const z=(mr[i]-mr[j])/Math.sqrt(v0*(1/n[i]+1/n[j])),p=pNorm2(z);out.push({i,j,z,p,padj:Math.min(1,p*pairs)})}
+ return out}
