@@ -55,3 +55,36 @@ export const fx=(x,d=3)=>x==null||!Number.isFinite(x)?'':x.toFixed(d);
 export const fnz=(x,d=3)=>fx(x,d).replace(/^(-?)0\./,'$1.');
 export const fp=p=>p==null||Number.isNaN(p)?'':p<.001?'<.001':fnz(p,3);
 export const apaP=p=>p<.001?'p < .001':'p = '+fnz(p,3);
+
+// ================= المرحلة 5: اختبارات لامعلمية، انحدار، ثبات، اعتدالية =================
+const tieSum=a=>{const m=new Map();for(const x of a)m.set(x,(m.get(x)||0)+1);let s=0;for(const t of m.values())s+=t*t*t-t;return s};
+export function mannWhitney(a,b){const n1=a.length,n2=b.length,N=n1+n2,r=ranks(a.concat(b));let R1=0;for(let i=0;i<n1;i++)R1+=r[i];const R2=N*(N+1)/2-R1,U1=R1-n1*(n1+1)/2,U2=n1*n2-U1,U=Math.min(U1,U2),T=tieSum(a.concat(b)),sd=Math.sqrt(n1*n2/12*((N+1)-T/(N*(N-1)))),z=sd>0?(U1-n1*n2/2)/sd:NaN;
+ return{n1,n2,R1,R2,mr1:R1/n1,mr2:R2/n2,U1,U2,U,z,p:Number.isFinite(z)?pNorm2(z):NaN,r:Math.abs(z)/Math.sqrt(N)}}
+export function wilcoxon(x,y){const d=[];let ties=0;for(let i=0;i<x.length;i++){const v=x[i]-y[i];if(v===0)ties++;else d.push(v)}const n=d.length,ab=d.map(Math.abs),r=ranks(ab);let Wp=0,Wn=0,np=0,nn=0;for(let i=0;i<n;i++){if(d[i]>0){Wp+=r[i];np++}else{Wn+=r[i];nn++}}
+ const mu=n*(n+1)/4,v=n*(n+1)*(2*n+1)/24-tieSum(ab)/48,sd=Math.sqrt(v),z=sd>0?(Wp-mu)/sd:NaN;return{n,np,nn,ties,Wp,Wn,mrp:np?Wp/np:NaN,mrn:nn?Wn/nn:NaN,z,p:Number.isFinite(z)?pNorm2(z):NaN,r:Math.abs(z)/Math.sqrt(x.length)}}
+export function kruskal(groups){const all=[].concat(...groups),N=all.length,r=ranks(all);let off=0,H=0;const mr=[];for(const g of groups){let s=0;for(let i=0;i<g.length;i++)s+=r[off+i];off+=g.length;mr.push(s/g.length);H+=s*s/g.length}
+ H=12/(N*(N+1))*H-3*(N+1);const C=1-tieSum(all)/(N*N*N-N);H=C>0?H/C:NaN;const df=groups.length-1;return{N,df,H,p:pChi(H,df),eps2:H/(N-1),mr,n:groups.map(g=>g.length)}}
+function invert(M){const n=M.length,A=M.map((r,i)=>r.concat(Array.from({length:n},(_,j)=>+(i===j))));for(let c=0;c<n;c++){let p=c;for(let r=c+1;r<n;r++)if(Math.abs(A[r][c])>Math.abs(A[p][c]))p=r;if(Math.abs(A[p][c])<1e-11)return null;[A[c],A[p]]=[A[p],A[c]];const d=A[c][c];for(let j=0;j<2*n;j++)A[c][j]/=d;for(let r=0;r<n;r++)if(r!==c){const f=A[r][c];if(f)for(let j=0;j<2*n;j++)A[r][j]-=f*A[c][j]}}return A.map(r=>r.slice(n))}
+export function linreg(X,y){const n=y.length,k=X.length,p=k+1,dfe=n-p;if(dfe<1)throw new Error('df');const cols=[new Array(n).fill(1),...X],XtX=cols.map(a=>cols.map(b=>{let s=0;for(let i=0;i<n;i++)s+=a[i]*b[i];return s})),Xty=cols.map(a=>{let s=0;for(let i=0;i<n;i++)s+=a[i]*y[i];return s}),inv=invert(XtX);if(!inv)throw new Error('collinear');
+ const b=inv.map(r=>r.reduce((s,v,j)=>s+v*Xty[j],0)),ym=y.reduce((s,v)=>s+v,0)/n;let sse=0,sst=0,dw1=0,prev=0;const res=[];for(let i=0;i<n;i++){let f=0;for(let j=0;j<p;j++)f+=b[j]*cols[j][i];const e=y[i]-f;res.push(e);sse+=e*e;sst+=(y[i]-ym)**2;if(i)dw1+=(e-prev)**2;prev=e}
+ const ssr=sst-sse,mse=sse/dfe,R2=sst>0?ssr/sst:NaN,F=k&&mse>0?(ssr/k)/mse:NaN,tc=tCrit(.05,dfe),sy=Math.sqrt(sst/(n-1)),co=b.map((bj,j)=>{const se=Math.sqrt(mse*inv[j][j]),t=bj/se,sx=j?Math.sqrt(X[j-1].reduce((s,v)=>s+v,0)/n*0+desc(X[j-1]).var):NaN;return{b:bj,se,t,p:pT2(t,dfe),lo:bj-tc*se,hi:bj+tc*se,beta:j?bj*sx/sy:NaN}});
+ let vif=null;if(k>=2){const m=X.map((a,i)=>X.map((c,j)=>i===j?1:corr(a,c))),mi=invert(m);if(mi)vif=mi.map((r,i)=>r[i])}
+ return{n,k,dfe,R2,adj:1-(1-R2)*(n-1)/dfe,R:Math.sqrt(Math.max(R2,0)),see:Math.sqrt(mse),F,pF:pF(F,k,dfe),ssr,sse,sst,msr:ssr/k,mse,co,vif,dw:sse>0?dw1/sse:NaN,res}}
+export function cronbach(items){const k=items.length,n=items[0].length,V=a=>desc(a).var,tot=Array.from({length:n},(_,i)=>items.reduce((s,a)=>s+a[i],0)),vt=V(tot),alpha=k/(k-1)*(1-items.reduce((s,a)=>s+V(a),0)/vt);
+ const rs=[],R=items.map((a,i)=>items.map((c,j)=>i===j?1:corr(a,c))),rbar=R.reduce((s,r,i)=>s+r.reduce((q,v,j)=>q+(i===j?0:v),0),0)/(k*(k-1)),std=k*rbar/(1+(k-1)*rbar);
+ const det=items.map((a,i)=>{const rest=tot.map((t,q)=>t-a[q]),vr=V(rest),ci=corr(a,rest);const cov=k>2?(k-1)/(k-2)*(1-items.reduce((s,c,j)=>s+(j===i?0:V(c)),0)/vr):NaN;return{r:corr(a,rest),a:cov,mean:desc(a).mean,sd:desc(a).sd}});return{k,n,alpha,std,det,meanR:rbar}}
+// معكوس التوزيع الطبيعي (Acklam + خطوة تحسين)
+export function qnorm(p){if(p<=0)return-Infinity;if(p>=1)return Infinity;const a=[-39.69683028665376,220.9460984245205,-275.9285104469687,138.357751867269,-30.66479806614716,2.506628277459239],b=[-54.47609879822406,161.5858368580409,-155.6989798598866,66.80131188771972,-13.28068155288572],c=[-.007784894002430293,-.3223964580411365,-2.400758277161838,-2.549732539343734,4.374664141464968,2.938163982698783],d=[.007784695709041462,.3224671290700398,2.445134137142996,3.754408661907416];let x;
+ if(p<.02425){const q=Math.sqrt(-2*Math.log(p));x=(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1)}else if(p>1-.02425){const q=Math.sqrt(-2*Math.log(1-p));x=-(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1)}else{const q=p-.5,r=q*q;x=(((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1)}
+ const cdf=z=>z>=0?1-pNorm2(z)/2:pNorm2(z)/2,e=cdf(x)-p,u=e*Math.sqrt(2*Math.PI)*Math.exp(x*x/2);return x-u/(1+x*u/2)}
+const poly=(c,x)=>c.reduce((s,v,j)=>s+v*x**j,0);
+// اختبار شابيرو–ويلك (Royston 1995) للأحجام 3 – 5000
+export function shapiroWilk(a){const x=Float64Array.from(a).sort(),n=x.length;if(n<3||n>5000)return{W:NaN,p:NaN,n};const nn2=n>>1,an=n,m=[];for(let i=1;i<=nn2;i++)m.push(qnorm((i-.375)/(an+.25)));
+ const A=new Array(nn2);if(n===3)A[0]=Math.SQRT1_2;else{const sm=2*m.reduce((s,v)=>s+v*v,0),ss=Math.sqrt(sm),rsn=1/Math.sqrt(an),a1=poly([0,.221157,-.147981,-2.07119,4.434685,-2.706056],rsn)-m[0]/ss;let i1,fac;
+  if(n>5){i1=2;const a2=-m[1]/ss+poly([0,.042981,-.293762,-1.752461,5.682633,-3.582633],rsn);fac=Math.sqrt((sm-2*m[0]*m[0]-2*m[1]*m[1])/(1-2*a1*a1-2*a2*a2));A[1]=a2}else{i1=1;fac=Math.sqrt((sm-2*m[0]*m[0])/(1-2*a1*a1))}
+  A[0]=a1;for(let i=i1;i<nn2;i++)A[i]=-m[i]/fac}
+ let mean=0;for(const v of x)mean+=v;mean/=n;let ss=0;for(const v of x)ss+=(v-mean)**2;if(!(ss>0))return{W:NaN,p:NaN,n};let num=0;for(let i=0;i<nn2;i++)num+=A[i]*(x[n-1-i]-x[i]);const W=Math.min(num*num/ss,1);
+ let p;if(n===3){p=6/Math.PI*(Math.asin(Math.sqrt(W))-Math.asin(Math.sqrt(.75)));p=Math.max(p,0)}else{const y=Math.log(1-W),xx=Math.log(an);let mu,sg,yy=y;
+  if(n<=11){const g=-2.273+.459*an;if(y>=g)return{W,p:1e-99,n};yy=-Math.log(g-y);mu=poly([.544,-.39978,.025054,-6.714e-4],an);sg=Math.exp(poly([1.3822,-.77857,.062767,-.0020322],an))}else{mu=poly([-1.5861,-.31082,-.083751,.0038915],xx);sg=Math.exp(poly([-.4803,-.082676,.0030302],xx))}
+  const z=(yy-mu)/sg;p=z>0?pNorm2(z)/2:1-pNorm2(z)/2}
+ return{W,p,n}}

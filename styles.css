@@ -277,3 +277,16 @@ kbd{font:11px ui-monospace,Consolas,monospace;background:var(--head);border:1px 
 @media(max-width:980px){#toolbar .grp button{min-width:54px;height:56px}#toolbar .tile{width:42px;height:42px}}
 
 #btnInstall[hidden]{display:none}
+
+/* ===== v0.6: معالج اختيار الاختبار ===== */
+.wz{width:min(640px,94vw)}.wzb{padding:6px 2px 4px;min-height:230px}.wq{font-size:18px;font-weight:700;margin:6px 2px 14px}
+.wopts{display:grid;gap:9px}.wopts button{display:flex;align-items:center;gap:12px;text-align:start;padding:13px 16px;border-radius:14px;border:1px solid var(--line);background:var(--head);color:var(--acc);animation:pop .22s both;animation-delay:var(--d,0ms);transition:all .15s}
+.wopts button span{color:var(--text);font-size:14.5px;line-height:1.5}.wopts button:hover{border-color:var(--acc);background:var(--acc2);transform:translateX(-3px)}[dir=ltr] .wopts button:hover{transform:translateX(3px)}
+.wres small{color:var(--mute)}.wres h4{margin:2px 0 8px;font-size:22px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block}.wres p{margin:6px 0;line-height:1.7}.wres h5{margin:14px 0 4px;font-size:13px;color:var(--mute)}.wres ul{margin:0;padding-inline-start:20px;line-height:1.7;font-size:13.5px}
+.wsoon{color:#a35a00;background:#fff3dd;border-radius:10px;padding:7px 12px;display:flex;gap:8px;align-items:center}.walt{display:flex;gap:9px;align-items:flex-start;margin-top:12px;padding:10px 14px;background:var(--acc2);border-radius:12px;color:var(--acc);font-size:13.5px;line-height:1.6}
+.wact{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.wact .go,.wact .cx{padding:9px 20px;border-radius:10px;font-weight:600}.wact .go{background:var(--grad);color:#fff;border:0;box-shadow:0 4px 12px rgba(31,111,235,.3)}
+
+#outline button span{unicode-bidi:plaintext}
+
+/* شعار أكبر في الزاوية */
+.brand{gap:12px}.brand .mark{filter:drop-shadow(0 3px 8px rgba(31,111,235,.3))}.wm{font-size:25px}#titlebar{padding:5px 24px}

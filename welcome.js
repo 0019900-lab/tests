@@ -1,6 +1,6 @@
 // Smart-Analysis – شاشة الترحيب + عن البرنامج
 import {T,lang} from './i18n.js';import {ic} from './icons.js';import {CHANGELOG} from './guide-data.js';
-export const VERSION='0.5.0',NAME='Smart-Analysis';
+export const VERSION='0.6.0',NAME='Smart-Analysis';
 const L=(c,i)=>lang()==='ar'?c[1][i]:c[1][i+1];
 export function showWelcome(act,force){if(!force&&localStorage.welcome==='0')return;
  const ov=document.createElement('div');ov.className='dlgov wov';const first=CHANGELOG[0],news=[];for(let i=0;i<first[1].length;i+=2)news.push(L(first,i));
