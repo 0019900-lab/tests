@@ -88,3 +88,29 @@ export function shapiroWilk(a){const x=Float64Array.from(a).sort(),n=x.length;if
   if(n<=11){const g=-2.273+.459*an;if(y>=g)return{W,p:1e-99,n};yy=-Math.log(g-y);mu=poly([.544,-.39978,.025054,-6.714e-4],an);sg=Math.exp(poly([1.3822,-.77857,.062767,-.0020322],an))}else{mu=poly([-1.5861,-.31082,-.083751,.0038915],xx);sg=Math.exp(poly([-.4803,-.082676,.0030302],xx))}
   const z=(yy-mu)/sg;p=z>0?pNorm2(z)/2:1-pNorm2(z)/2}
  return{W,p,n}}
+// ---------- الانحدار اللوجستي الثنائي (IRLS / نيوتن–رافسون) – المرحلة 5 (الجزء 2) ----------
+export function logistic(X,y,opt={}){const n=y.length,k=X.length,p=k+1,cols=[new Array(n).fill(1),...X],cut=opt.cut??.5;
+ const n1=y.reduce((s,v)=>s+v,0),n0=n-n1;if(n1===0||n0===0)throw new Error('onevalue');if(n<=p)throw new Error('df');
+ let b=new Array(p).fill(0);b[0]=Math.log(n1/n0);let inv=null,conv=false,it=0;
+ const lin=bb=>{const e=new Array(n);for(let i=0;i<n;i++){let z=0;for(let j=0;j<p;j++)z+=bb[j]*cols[j][i];e[i]=z}return e};
+ const prob=z=>z>=0?1/(1+Math.exp(-z)):Math.exp(z)/(1+Math.exp(z));
+ const ll=bb=>{const z=lin(bb);let s=0;for(let i=0;i<n;i++){const t=z[i];s+=y[i]?-Math.log1p(Math.exp(-Math.abs(t)))-Math.max(-t,0):-Math.log1p(Math.exp(-Math.abs(t)))-Math.max(t,0)}return s};
+ let cur=ll(b);
+ for(it=1;it<=100;it++){const z=lin(b),pr=z.map(prob),g=new Array(p).fill(0),H=Array.from({length:p},()=>new Array(p).fill(0));
+  for(let i=0;i<n;i++){const w=pr[i]*(1-pr[i]),r=y[i]-pr[i];for(let a=0;a<p;a++){const ca=cols[a][i];g[a]+=ca*r;const wa=w*ca;for(let c=a;c<p;c++)H[a][c]+=wa*cols[c][i]}}
+  for(let a=0;a<p;a++)for(let c=0;c<a;c++)H[a][c]=H[c][a];
+  inv=invert(H);if(!inv)throw new Error(Math.max(...b.map(Math.abs))>8||pr.some(q=>q<1e-7||q>1-1e-7)?'separation':'collinear');
+  let step=inv.map(r=>r.reduce((s,v,j)=>s+v*g[j],0)),t=1,nb,nl;
+  for(let h=0;h<30;h++){nb=b.map((v,j)=>v+t*step[j]);nl=ll(nb);if(nl>=cur-1e-12)break;t/=2}
+  const d=Math.max(...nb.map((v,j)=>Math.abs(v-b[j])));b=nb;cur=nl;if(Math.max(...b.map(Math.abs))>30)throw new Error('separation');if(d<1e-9){conv=true;break}}
+ if(!conv)throw new Error('noconv');
+ {const z=lin(b),pr=z.map(prob),H=Array.from({length:p},()=>new Array(p).fill(0));for(let i=0;i<n;i++){const w=pr[i]*(1-pr[i]);for(let a=0;a<p;a++)for(let c=0;c<p;c++)H[a][c]+=w*cols[a][i]*cols[c][i]}inv=invert(H);if(!inv)throw new Error('collinear')}
+ const se=b.map((_,j)=>Math.sqrt(inv[j][j]));if(se.some(s=>!Number.isFinite(s))||b.some(v=>Math.abs(v)>25)||se.some(s=>s>1e3))throw new Error('separation');
+ const co=b.map((bj,j)=>{const W=(bj/se[j])**2;return{b:bj,se:se[j],wald:W,p:pChi(W,1),or:Math.exp(bj),lo:Math.exp(bj-1.959964*se[j]),hi:Math.exp(bj+1.959964*se[j])}});
+ const LL=cur,LL0=n1*Math.log(n1/n)+n0*Math.log(n0/n),m2=-2*LL,m20=-2*LL0,chi=m20-m2,pr=lin(b).map(prob);
+ const cs=1-Math.exp((m2-m20)/n),nag=cs/(1-Math.exp(-m20/n)),mcf=1-LL/LL0;
+ const cm=[[0,0],[0,0]];for(let i=0;i<n;i++)cm[y[i]][pr[i]>=cut?1:0]++;
+ // اختبار Hosmer–Lemeshow (10 مجموعات حسب الاحتمال المتوقع)
+ let hl=null;if(n>=20){const ord=pr.map((v,i)=>i).sort((a,c)=>pr[a]-pr[c]),G=Math.min(10,Math.floor(n/5));let x2=0,used=0;for(let g=0;g<G;g++){const a=Math.round(g*n/G),c=Math.round((g+1)*n/G);let o1=0,e1=0,m=c-a;for(let q=a;q<c;q++){o1+=y[ord[q]];e1+=pr[ord[q]]}const o0=m-o1,e0=m-e1;if(e1>0)x2+=(o1-e1)**2/e1;if(e0>0)x2+=(o0-e0)**2/e0;used++}
+  if(used>2)hl={chi:x2,df:used-2,p:pChi(x2,used-2),groups:used}}
+ return{n,k,n1,n0,co,LL,m2,m20,chi,df:k,p:pChi(chi,k),cs,nag,mcf,cm,acc:(cm[0][0]+cm[1][1])/n,sens:cm[1][1]/n1,spec:cm[0][0]/n0,hl,iter:it,cut,pred:pr}}
