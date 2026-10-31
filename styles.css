@@ -499,3 +499,9 @@ bdi{unicode-bidi:isolate}kbd,.wm,.gr span,.fc small,.kk,.chip i,.tc{unicode-bidi
 .ig{font-size:13px}.ig small{font-size:var(--lbl)}
 [data-theme=dark] #toolbar .tile{background:color-mix(in srgb,var(--acc) 16%,var(--panel))}
 @media(max-width:700px){#toolbar .grp{padding:0 4px}#toolbar .grp button{min-width:54px;width:54px}:root{--tile:36px;--ico:20px}}
+
+/* ===== v0.12.2: خط موحّد (يتحمّل من الشبكة عند توفرها، وإلا يعود للخطوط المثبّتة) ===== */
+html,body,button,input,select,textarea{font-family:"IBM Plex Sans Arabic","SA","Segoe UI","Noto Sans Arabic",Tahoma,system-ui,sans-serif;font-synthesis:none;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.seg button,.gnav button,#menubar button,.goal b,.lnk,.go{font-weight:600}
+.seg button{font-size:13px;line-height:1.2;min-width:84px;text-align:center}
+.gnav button span{font-size:14px;font-weight:500}.gnav button.on span{font-weight:700}
