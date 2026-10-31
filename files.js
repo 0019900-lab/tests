@@ -3,7 +3,7 @@ import {store,rowsToState,parseDelimited,replaceAll,markSaved,toCSV,toProject,fr
 const say=t=>{document.querySelector('#status').textContent=t};
 const tick=()=>new Promise(r=>setTimeout(r,20));
 function dl(name,data,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
-async function loadXlsx(f){
+export async function loadXlsx(f){
  if(!window.XLSX)await new Promise(ok=>{const s=document.createElement('script');s.src='vendor/xlsx.full.min.js';s.onload=ok;s.onerror=ok;document.head.append(s)});
  if(!window.XLSX)throw new Error(T('يحتاج ملف Excel إلى مكتبة SheetJS: ضع xlsx.full.min.js في مجلد vendor (راجع README)','Excel needs SheetJS: put xlsx.full.min.js in the vendor folder (see README)'));
  const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});

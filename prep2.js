@@ -4,7 +4,7 @@ import {T} from './i18n.js';
 import {store,replaceAll} from './data.js';
 import {col,getFilter,setFilter,getSplit,setSplit,splitGroups} from './analyses.js';
 import {compileExpr,colGetter,uniqueName,typedVar} from './transform.js';
-import {dialog} from './dialog.js';
+import {dialog} from './dialog.js';import {mergeFiles} from './merge.js';
 const bad=(a,e)=>{throw new Error(T(a,e))};
 
 // ================= 1) اختيار الحالات =================
@@ -56,6 +56,7 @@ function badge(){const mk=(id,fn)=>{let b=document.querySelector('#'+id);if(!b){
  bs.hidden=!sp;if(sp){bs.textContent=T(`مقسَّم حسب: ${sp.names.join('، ')}`,`Split by: ${sp.names.join(', ')}`);bs.title=T('كل تحليل يُشغَّل لكل مجموعة على حدة','Every analysis runs once per group')}}
 if(typeof document!=='undefined'){document.addEventListener('sa:filter',badge);badge()}
 export const TR2={
+ merge:mergeFiles,
  split(){if(!need())return;const cur=getSplit();
   dialog('sp',{title:['تقسيم الملف','Split File'],fields:[{key:'vars',label:['قسّم حسب (متغير فئوي أو أكثر)','Split by (one or more categorical variables)'],multi:true}],options:[
    {key:'mode',type:'sel',label:['الطريقة','Method'],def:cur?'off':'sep',opts:[['sep',['تحليل كل مجموعة على حدة','Run each analysis separately for each group']],['off',['إلغاء التقسيم (تحليل كل الحالات معاً)','Turn splitting off (analyse all cases together)']]]}],
