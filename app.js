@@ -1,5 +1,5 @@
 import * as G from './ui-grid.js';import * as F from './files.js';import {store,undo,redo} from './data.js';import {A} from './analyses.js';
-import {initOutput,addText,clearOutput,EXPORT,explainLast} from './output.js';import {T} from './i18n.js';import {letter} from './keys.js';import {openWizard} from './wizard.js';import {ic,ti,mark} from './icons.js';
+import {initOutput,addText,clearOutput,EXPORT,explainLast,setPane,paneOpen} from './output.js';import {T} from './i18n.js';import {letter} from './keys.js';import {openWizard} from './wizard.js';import {ic,ti,mark} from './icons.js';
 import {initGuide,openGuide,undocumented} from './guide.js';import {showWelcome,showAbout} from './welcome.js';import {openFind,closeFind} from './find.js';import {CONFIG} from './config.js';
 // Smart-Analysis – القوائم. كل عنصر: [عربي, English, اختصار, أمر, مرحلة] — مرحلة 0 = قريباً بدون موعد محدد
 const S='-';
@@ -41,8 +41,8 @@ function askDalia(){const url=CONFIG.ASK_DALIA_URL;if(!url){say(T('رابط Ask 
  window.open(url,'_blank','noopener');   // مباشرة داخل النقرة كي لا يحجبه المتصفح
  setTimeout(()=>fx.classList.add('out'),750);setTimeout(()=>fx.remove(),1100)}
 const ACT={theme(){theme=theme==='dark'?'light':'dark';applyLook()},lang(){lang=lang==='ar'?'en':'ar';applyLook()},palette:openPal,
- pane(){const p=$('#outputPane');p.style.display=p.style.display==='none'?'':'none'},print(){print()},about:showAbout,
- outputWide(){const p=$('#outputPane');p.style.display='';p.classList.toggle('wide');p.relang()},
+ pane(){setPane(!paneOpen())},print(){print()},about:showAbout,
+ outputWide(){const p=$('#outputPane');setPane(true);p.classList.toggle('wide');p.relang()},
  showData(){$('.tab[data-view=data]').click()},find:()=>openFind(),addText,guide:()=>openGuide(),guideKeys:()=>openGuide('keys'),welcome:()=>showWelcome(ACT,true),
  explain:explainLast,askDalia,exportHtml:EXPORT.html,exportWord:EXPORT.word,exportPdf:EXPORT.pdf,exportMd:EXPORT.md,exportXlsx:EXPORT.xlsx};
 function run(it){if(it[3]&&ACT[it[3]])ACT[it[3]]();else say(it[4]?T(`سيتوفر «${it[0]}» في المرحلة ${it[4]}`,`“${it[1]}” arrives in phase ${it[4]}`):T(`«${it[0]}» قريباً`,`“${it[1]}” is coming soon`))}

@@ -1,6 +1,7 @@
 // StatLab – Data View (virtual grid) + Variable View
 import {T} from './i18n.js';import {letter} from './keys.js';
 import {store,cell,show,commit,subscribe,setVar,undo,redo,FORMATS,fmtOf} from './data.js';
+import {pick,glyph,labelOf,GL,openValues,openMissing,askText,parseValues,closePop} from './varpicker.js';
 const $=s=>document.querySelector(s),say=t=>{$('#status').textContent=t};
 const RH=26,CW=100,NW=52;
 const wrap=$('#gridWrap'),grid=$('#grid'),vg=$('#varGrid'),cellInput=$('#cellInput');
@@ -59,15 +60,30 @@ const OPT={type:FORMATS,align:['Left','Right','Center'],measure:['Scale','Ordina
 // شرح عربي بجانب خيارات SPSS الإنجليزية (القيمة المخزَّنة تبقى الإنجليزية)
 const AR={Numeric:'رقمي',Comma:'فاصلة',Dot:'نقطة',String:'نصي','Scientific notation':'أُسّي علمي',Dollar:'دولار','Custom currency':'عملة مخصصة','Restricted Number':'رقم مقيَّد',Left:'يسار',Right:'يمين',Center:'وسط',Scale:'كمّي',Ordinal:'ترتيبي',Nominal:'اسمي',Input:'مُدخَل',Target:'هدف',Both:'كلاهما',None:'بلا',Partition:'تجزئة',Split:'تقسيم'};
 const optLabel=o=>document.documentElement.lang==='ar'?(AR[o]?`${o} · ${AR[o]}`:o.startsWith('Date ')?`${o} · تاريخ`:o):o;
+const AL_AR={Left:'يسار',Center:'وسط',Right:'يمين'},PK=['type','measure','role'],NUMF=['width','decimals','columns'];
+const NUMR={width:[0,40],decimals:[0,40],columns:[1,255]};
+function chip(f,val){const ar=document.documentElement.lang==='ar',name=String(val).replace(/^Date /,''),sub=ar?(AR[val]||(/^Date /.test(val)?'تاريخ':'')):'';
+ return`<span class="vi">${glyph(f,val)}</span><span class="vl">${esc(name)}${sub?`<small>${sub}</small>`:''}</span><span class="vc">${GL.caret}</span>`}
 function renderVars(){
  let h='<thead><tr><th>#</th>'+[['الاسم','Name'],['النوع','Type'],['العرض','Width'],['الكسور العشرية','Decimals'],['التسمية','Label'],['تسميات القيم','Values'],['القيم المفقودة','Missing'],['الأعمدة','Columns'],['المحاذاة','Align'],['مستوى القياس','Measure'],['الدور','Role']].map(x=>`<th>${T(x[0]+' <small>'+x[1]+'</small>',x[1])}</th>`).join('')+'</tr></thead><tbody>';
  for(let i=0;i<=store.vars.length;i++){const v=store.vars[i];h+=`<tr><th>${i+1}</th>`+VF.map(f=>{const val=v?(f==='type'?fmtOf(v):f==='columns'?(v.columns??8):f==='align'?alg(v):v[f]):'';
-  if(OPT[f]&&v)return`<td><select data-i="${i}" data-f="${f}">${OPT[f].map(o=>`<option value="${o}"${o===val?' selected':''}>${optLabel(o)}</option>`).join('')}</select></td>`;
-  return`<td><input data-i="${i}" data-f="${f}" value="${esc(val)}"${!v&&f!=='name'?' disabled':''}></td>`}).join('')+'</tr>'}
+  if(v&&PK.includes(f))return`<td><button type="button" class="vsel" data-i="${i}" data-f="${f}" data-v="${esc(val)}" aria-haspopup="listbox">${chip(f,val)}</button></td>`;
+  if(v&&f==='align')return`<td><div class="vseg" role="group">${['Left','Center','Right'].map(a=>`<button type="button" data-i="${i}" data-a="${a}" class="${a===val?'on':''}" title="${esc(T(AL_AR[a]+' · '+a,a))}" aria-pressed="${a===val}">${GL[a.toLowerCase()]}</button>`).join('')}</div></td>`;
+  if(v&&(f==='values'||f==='missing')){const vs=f==='values'?parseValues(val):String(val||'').split(/[,;\s]+/).filter(Boolean),txt=f==='values'?vs.slice(0,2).map(p=>p[0]+' = '+p[1]).join('  ·  '):vs.slice(0,4).join(', ');
+   return`<td><button type="button" class="vsel vtx${vs.length?' has':''}" data-i="${i}" data-open="${f}" title="${esc(txt)}">${vs.length?`<span class="vl">${esc(txt)}</span><b class="vn">${vs.length}</b>`:`<span class="vl mute">${GL.plus}${T('إضافة','Add')}</span>`}</button></td>`}
+  if(v&&NUMF.includes(f))return`<td><input type="number" class="vnum" data-i="${i}" data-f="${f}" value="${esc(val)}" min="${NUMR[f][0]}" max="${NUMR[f][1]}" step="1" inputmode="numeric"></td>`;
+  return`<td><input data-i="${i}" data-f="${f}" value="${esc(val)}"${!v&&f!=='name'?' disabled':''}${!v&&f==='name'?` placeholder="${esc(T('اكتب اسم متغير جديد…','Type a new variable name…'))}"`:''}></td>`}).join('')+'</tr>'}
  vg.innerHTML=h+'</tbody>'}
+function applyPick(i,f,val){const err=setVar(i,f,val);if(err){say(err);renderVars();return}
+ if(f==='type'&&val==='Custom currency'){const v=store.vars[i];askText({title:T('رمز العملة','Currency symbol'),sub:T('يظهر قبل المبلغ، مثل EGP أو ر.س','Shown before the amount, e.g. EGP or SAR'),value:v.cur||'EGP',onOk:c=>{setVar(i,'cur',c);renderVars()}})}
+ renderVars()}
+vg.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!vg.contains(b)||b.dataset.i==null)return;const i=+b.dataset.i;
+ if(b.dataset.a){const err=setVar(i,'align',b.dataset.a);if(err)say(err);renderVars();return}
+ if(b.dataset.open){const f=b.dataset.open;(f==='values'?openValues:openMissing)(i,s=>{const err=setVar(i,f,s);if(err)say(err);renderVars()});return}
+ if(b.dataset.f)pick(b,b.dataset.f,b.dataset.v,val=>applyPick(i,b.dataset.f,val))});
 vg.addEventListener('change',e=>{const t=e.target;if(!t.dataset.f)return;const err=setVar(+t.dataset.i,t.dataset.f,t.value);if(err){say(err);renderVars()}else if(t.dataset.f==='type'&&t.value==='Custom currency'){const v=store.vars[+t.dataset.i],c=prompt(T('رمز العملة (مثل EGP أو ر.س):','Currency symbol (e.g. EGP or SAR):'),v.cur||'EGP');if(c&&c.trim())setVar(+t.dataset.i,'cur',c.trim())}});
 // ---- ربط الأحداث ----
-function setView(v){view=v;grid.hidden=v!=='data';vg.hidden=v!=='var';
+function setView(v){closePop();view=v;grid.hidden=v!=='data';vg.hidden=v!=='var';
  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.view===v));if(v==='data')render();else renderVars()}
 export function init(){
  wrap.tabIndex=0;wrap.append(ed);cellInput.disabled=false;

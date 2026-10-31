@@ -11,9 +11,9 @@ export const setItems=a=>{items=(a||[]).map(x=>({...x,id:uid++}));render()};
 export const count=()=>items.length;
 export function addBlock(title,tables,apaLines,facts){items.push({id:uid++,type:'result',title,tables,apa:apaLines,facts,time:Date.now()});render();
  const b=$('#outputBody');b.lastElementChild&&b.lastElementChild.scrollIntoView({behavior:'smooth',block:'start'});
- const p=$('#outputPane');if(p.style.display==='none')p.style.display=''}
+ const p=$('#outputPane');if(!paneOpen())setPane(true)}
 export function addChart(title,kind,spec,cap){items.push({id:uid++,type:'chart',kind,spec,title,cap,time:Date.now()});render();
- const b=$('#outputBody');b.lastElementChild&&b.lastElementChild.scrollIntoView({behavior:'smooth',block:'start'});const p=$('#outputPane');if(p.style.display==='none')p.style.display=''}
+ const b=$('#outputBody');b.lastElementChild&&b.lastElementChild.scrollIntoView({behavior:'smooth',block:'start'});const p=$('#outputPane');if(!paneOpen())setPane(true)}
 // «فسّر نتائجي» على آخر نتيجة أو رسم يمكن شرحه
 export function explainLast(){const it=[...items].reverse().find(x=>explain(x,'en'));if(!it){say(T('نفّذ تحليلاً أو ارسم مخططاً أولاً ثم اطلب الشرح','Run an analysis or draw a chart first, then ask for the explanation'));return}
  it.explain=true;it.collapsed=false;render();const s=$(`#outputBody [data-id="${it.id}"] .xpl`);s&&s.scrollIntoView({behavior:'smooth',block:'center'});s&&(s.classList.add('flash'),setTimeout(()=>s.classList.remove('flash'),1400));say(T('تم شرح آخر نتيجة','Explained the latest result'))}
@@ -54,9 +54,15 @@ export const EXPORT={
  async copyAll(){if(!need())return;const html=itemsHTML(items,opts());
   try{await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([`<style>${'table{border-collapse:collapse}th,td{padding:3px 10px}'}</style>${html}`],{type:'text/html'}),'text/plain':new Blob([toMarkdown(items,opts())],{type:'text/plain'})})]);say(T('تم نسخ كل المخرجات (الصقها في Word)','Copied all output (paste into Word)'))}
   catch{say(T('منع المتصفح عملية النسخ','Clipboard blocked by browser'))}}};
+// ---- إظهار/إخفاء لوحة المخرجات بانزلاق سلس (الحالة تُحفظ) ----
+export const paneOpen=()=>!$('#outputPane').classList.contains('collapsed');
+function tabLabel(){const t=$('#outTab');if(!t)return;const open=paneOpen();t.innerHTML=ic('chevR',18)+`<span class="otl">${T('المخرجات','Output')}</span>`;t.title=open?T('إخفاء المخرجات (Alt+O)','Hide output (Alt+O)'):T('إظهار المخرجات (Alt+O)','Show output (Alt+O)');t.setAttribute('aria-label',t.title)}
+export function setPane(open){const p=$('#outputPane'),t=$('#outTab');p.classList.toggle('collapsed',!open);t.classList.toggle('closed',!open);t.setAttribute('aria-expanded',String(open));p.inert=!open;try{localStorage.outOpen=open?'1':'0'}catch{}tabLabel()}
 export function initOutput(){const pane=$('#outputPane');
  pane.innerHTML=`<div class="oh"><h3></h3><div class="otb"></div></div><div class="ob"><nav id="outline"></nav><div id="outputBody" class="empty"></div></div>`;
  const tb=pane.querySelector('.otb');
+ const tab=$('#outTab');tab.onclick=()=>setPane(!paneOpen());pane.addEventListener('transitionend',e=>{if(e.target===pane&&e.propertyName==='width')dispatchEvent(new Event('resize'))});
+ pane.classList.add('nt');setPane(localStorage.outOpen!=='0');requestAnimationFrame(()=>requestAnimationFrame(()=>pane.classList.remove('nt')));
  const B=(i,k,f,cls='')=>{const b=document.createElement('button');b.className=cls;b.dataset.k=k;b.innerHTML=ic(i,17);b.onclick=f;tb.append(b);return b};
  B('find','find',()=>document.dispatchEvent(new CustomEvent('statlab:find',{detail:'output'})));
  B('text','addText',addText);
@@ -75,7 +81,7 @@ export function initOutput(){const pane=$('#outputPane');
   pane.querySelector('h3').innerHTML=`${ic('output',18)} ${T('المخرجات','Output')}`;
   menu.innerHTML=XM.map(([k,i,l])=>`<button data-x="${k}">${ic(i,16)}<span>${l||T('نسخ الكل (للصق في Word)','Copy all (paste in Word)')}</span></button>`).join('');
   $('#outputBody').classList.toggle('apa-on',apa)}
- pane.relang=()=>{lab();render()};lab();render();
+ pane.relang=()=>{lab();tabLabel();render()};lab();render();
  pane.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g){const s=pane.querySelector(`[data-id="${g.dataset.go}"]`);s&&s.scrollIntoView({behavior:'smooth',block:'start'});return}
   const a=e.target.closest('[data-act]');if(!a)return;const sec=a.closest('.blk'),it=sec&&items.find(x=>x.id===+sec.dataset.id),i=it?items.indexOf(it):-1,act=a.dataset.act;
   if(act==='copy'){const tbl=a.closest('.tbw');const idx=[...pane.querySelectorAll('.tbw')].indexOf(tbl);let n=0,t;for(const x of items){if(x.type!=='result'||x.collapsed)continue;if(idx<n+x.tables.length){t=x.tables[idx-n];break}n+=x.tables.length}
