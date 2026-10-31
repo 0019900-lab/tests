@@ -1,6 +1,7 @@
 // Smart-Analysis – شاشة الترحيب + عن البرنامج
 import {T,lang,isolateLatin} from './i18n.js';import {ic} from './icons.js';import {CHANGELOG} from './guide-data.js';
-export const VERSION='0.8.0',NAME='Smart-Analysis';
+import {VERSION,BUILD,NAME} from './version.js';import {checkNow} from './update.js';
+export {VERSION,NAME};
 const L=(c,i)=>lang()==='ar'?c[1][i]:c[1][i+1];
 export function showWelcome(act,force){if(!force&&localStorage.welcome==='0')return;
  const ov=document.createElement('div');ov.className='dlgov wov';const first=CHANGELOG[0],news=[];for(let i=0;i<first[1].length;i+=2)news.push(L(first,i));
@@ -10,5 +11,5 @@ export function showWelcome(act,force){if(!force&&localStorage.welcome==='0')ret
  ov.addEventListener('click',e=>{if(e.target===ov||e.target.closest('.wx'))return close();const b=e.target.closest('[data-a]');if(b){close();act[b.dataset.a]&&act[b.dataset.a]()}});
  ov.addEventListener('keydown',e=>{if(e.key==='Escape')close()});ov.tabIndex=0;ov.focus()}
 export function showAbout(){const ov=document.createElement('div');ov.className='dlgov wov';
- ov.innerHTML=`<div class="about" dir="${lang()==='ar'?'rtl':'ltr'}"><img src="assets/logo.png" width="170" alt="${NAME}"><h2>${NAME} <small>v${VERSION}</small></h2><p>${T('برنامج مفتوح للتحليل الإحصائي يعمل بالكامل داخل المتصفح، وتبقى بياناتك على جهازك.','An open statistics app that runs entirely in your browser; your data stays on your device.')}</p><p class="mute">${T('المرحلة 5 قيد التنفيذ · الإصدار التجريبي','Phase 5 in progress · preview release')}</p><p class="credit">Coded by islam saad<br><a href="mailto:timaxo.apps@gmail.com">timaxo.apps@gmail.com</a></p><button class="go">${T('حسناً','OK')}</button></div>`;
- document.body.append(ov);const c=()=>ov.remove();ov.onclick=e=>{if(e.target===ov||e.target.classList.contains('go'))c()};ov.tabIndex=0;ov.focus();ov.onkeydown=e=>{if(e.key==='Escape'||e.key==='Enter')c()}}
+ ov.innerHTML=`<div class="about" dir="${lang()==='ar'?'rtl':'ltr'}"><img src="assets/logo.png" width="170" alt="${NAME}"><h2>${NAME} <small>v${VERSION}</small></h2><p>${T('برنامج مفتوح للتحليل الإحصائي يعمل بالكامل داخل المتصفح، وتبقى بياناتك على جهازك.','An open statistics app that runs entirely in your browser; your data stays on your device.')}</p><p class="mute">${T('الإصدار التجريبي','Preview release')} · ${BUILD}</p><p class="mute"><button class="chk" type="button">${T('التحقق من التحديثات','Check for updates')}</button> <span class="chkr"></span></p><p class="credit">Coded by islam saad<br><a href="mailto:timaxo.apps@gmail.com">timaxo.apps@gmail.com</a></p><button class="go">${T('حسناً','OK')}</button></div>`;
+ document.body.append(ov);ov.querySelector('.chk').onclick=async()=>{ov.querySelector('.chkr').textContent=await checkNow()};const c=()=>ov.remove();ov.onclick=e=>{if(e.target===ov||e.target.classList.contains('go'))c()};ov.tabIndex=0;ov.focus();ov.onkeydown=e=>{if(e.key==='Escape'||e.key==='Enter')c()}}
