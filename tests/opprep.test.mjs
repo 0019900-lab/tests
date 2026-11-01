@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {replaceAll,mkVar} from '../data.js';import {computeVar,recodeVars,reverseItems,sortCases} from '../transform.js';
+import {startWatch} from '../opwatch.js';import {getLog,clearLog,line} from '../oplog.js';
+let ok=0;const t=(n,c)=>{assert.ok(c,n);ok++};
+replaceAll({name:'t',vars:['a','b'].map(m=>mkVar(m,'Numeric')),cols:[[3,1,2],[4,5,6]],n:3},true);
+startWatch();clearLog();
+computeVar({target:'c',expr:'a+b'});
+recodeVars({vars:[0],into:'',suffix:'_r',map:'1=10; ELSE=COPY'});
+reverseItems({vars:[1],min:1,max:10,suffix:'_rev'});
+sortCases({by:[0],desc:true});
+const L=getLog();console.log(L.map(line).join('\n'));
+t('4 ops',L.length===4);
+t('compute',L[0].fn==='data.compute'&&L[0].opts.expr==='a+b'&&L[0].opts.target==='c');
+t('recode',L[1].fn==='data.recode'&&L[1].fields.vars[0]==='a');
+t('reverse',L[2].fn==='data.reverse'&&L[2].fields.vars[0]==='b'&&L[2].opts.max===10);
+t('sort',L[3].fn==='data.sort'&&L[3].fields.by[0]==='a'&&L[3].opts.order==='descending');
+console.log(`opprep: ${ok} passed`);
