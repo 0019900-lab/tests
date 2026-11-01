@@ -91,9 +91,11 @@ export function setVar(i,f,val){const s=store;val=String(val).trim();
  push({undo(){s.vars[i]=before;s.cols[i]=oc},redo(){s.vars[i]=after;s.cols[i]=nc}},true);
  emit(f==='type'?'data':'var');return null}
 export function markSaved(){store.dirty=false;emit('var')}
-export function replaceAll(st,clear){const s=store,prev={name:s.name,vars:s.vars,cols:s.cols,n:s.n};
+let REPL=null;export const onReplace=f=>{REPL=f};
+export function replaceAll(st,clear,meta){const s=store,prev={name:s.name,vars:s.vars,cols:s.cols,n:s.n};
  const set=x=>{s.name=x.name;s.vars=x.vars;s.cols=x.cols;s.n=x.n};
  if(clear){U.length=0;R.length=0;set(st);s.dirty=false}else push({undo:()=>set(prev),redo:()=>set(st)},true);
+ if(!clear&&REPL)try{REPL(prev,st,meta)}catch(e){}
  emit()}
 export function parseDelimited(t){
  if(t.charCodeAt(0)===0xFEFF)t=t.slice(1);

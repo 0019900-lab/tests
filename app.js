@@ -1,5 +1,5 @@
 import * as G from './ui-grid.js';import * as F from './files.js';import {store,undo,redo} from './data.js';import {A} from './analyses.js';
-import {initOutput,addText,clearOutput,EXPORT,explainLast,setPane,paneOpen} from './output.js';import {T} from './i18n.js';import {letter} from './keys.js';import {openWizard} from './wizard.js';import {TR} from './transform.js';import {TR2} from './prep2.js';import {ic,ti,mark} from './icons.js';
+import {initOutput,addText,clearOutput,EXPORT,explainLast,setPane,paneOpen} from './output.js';import {T} from './i18n.js';import {startWatch} from './opwatch.js';startWatch();import {letter} from './keys.js';import {openWizard} from './wizard.js';import {TR} from './transform.js';import {TR2} from './prep2.js';import {ic,ti,mark} from './icons.js';
 import {initGuide,openGuide,undocumented} from './guide.js';import {showWelcome,showAbout} from './welcome.js';import {buildMenus as bm} from './menus.js';import {openFind,closeFind} from './find.js';import {CONFIG} from './config.js';import {initUpdate} from './update.js';
 // Smart-Analysis – القوائم. كل عنصر: [عربي, English, اختصار, أمر, مرحلة] — مرحلة 0 = قريباً بدون موعد محدد
 const S='-';

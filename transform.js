@@ -72,10 +72,12 @@ function typedVar(name,vals){const isStr=vals.some(x=>typeof x==='string'),v=mkV
  if(isStr){let L=1;for(const x of vals)if(typeof x==='string'&&x.length>L)L=x.length;v.width=Math.min(Math.max(L,8),255)}else v.decimals=isInt(vals)?0:2;return v}
 function putVar(name,vals,labelFrom){const vars=store.vars.slice(),cols=store.cols.slice(),i=vars.findIndex(v=>v.name.toLowerCase()===name.toLowerCase()),nv=typedVar(i>=0?vars[i].name:name,vals);
  if(i>=0){const o=vars[i];Object.assign(nv,{label:o.label,columns:o.columns});vars[i]=nv;cols[i]=vals}else{if(labelFrom)nv.label=labelFrom;vars.push(nv);cols.push(vals)}
- replaceAll({name:store.name,vars,cols,n:store.n},false);return i>=0?i:vars.length-1}
+ replaceAll({name:store.name,vars,cols,n:store.n},false,META);return i>=0?i:vars.length-1}
 
 // ================= 3) حساب متغير =================
-export function computeVar({target,expr,cond}){
+let META=null;
+export function computeVar(o){META={fn:'data.compute',title:'Compute variable',opts:{target:o.target,expr:o.expr,...(o.cond?{if:o.cond}:{})}};try{return computeVar0(o)}finally{META=null}}
+function computeVar0({target,expr,cond}){
  if(!validName(String(target||''),store.vars.findIndex(v=>v.name.toLowerCase()===String(target||'').toLowerCase())))bad('اسم المتغير الهدف غير صالح (يبدأ بحرف ولا يحوي مسافات)','Invalid target name (must start with a letter, no spaces)');
  const g=colGetter(),E=compileExpr(expr,g,store.n),C=cond&&String(cond).trim()?compileExpr(cond,g,store.n):null,old=store.vars.findIndex(v=>v.name.toLowerCase()===target.toLowerCase()),oc=old>=0?store.cols[old]:null,out=new Array(store.n);
  for(let r=0;r<store.n;r++){if(C){const c=C.fn(r);if(!(c>0)){out[r]=oc?oc[r]??null:null;continue}}const v=E.fn(r);out[r]=v===undefined?null:v}
@@ -105,14 +107,14 @@ export function recodeVars({vars,into,suffix,map}){const m=parseRecode(map),take
   const o=store.vars[c],isStr=out.some(x=>typeof x==='string'),nv=typedVar(o.name,out);
   if(into==='same'){Object.assign(nv,{label:o.label,columns:o.columns,missing:'',values:''});vs[c]=nv;cs[c]=out;done.push(o.name)}
   else{const nm=uniqueName(o.name+(suffix||'_r'),taken);nv.name=nm;nv.label=o.label?`${o.label} (recoded)`:'';vs.push(nv);cs.push(out);done.push(nm)}}
- replaceAll({name:store.name,vars:vs,cols:cs,n:store.n},false);return done}
+ replaceAll({name:store.name,vars:vs,cols:cs,n:store.n},false,{fn:'data.recode',title:'Recode',fields:{vars:vars.map(i=>store.vars[i].name)},opts:{...(into?{into}:{}),...(suffix?{suffix}:{}),rules:map}});return done}
 
 // ================= 5) عكس ترميز البنود (يخدم ألفا كرونباخ) =================
 export function reverseItems({vars,min,max,suffix}){const taken=new Set(store.vars.map(v=>v.name.toLowerCase())),vs=store.vars.slice(),cs=store.cols.slice(),done=[];
  const cols=vars.map(c=>col(c,true));let lo=min,hi=max;if(lo===null||hi===null){lo=Infinity;hi=-Infinity;for(const a of cols)for(const x of a)if(typeof x==='number'){if(x<lo)lo=x;if(x>hi)hi=x}}
  if(!Number.isFinite(lo)||!Number.isFinite(hi)||lo>=hi)bad('تعذّر تحديد أدنى وأعلى قيمة للمقياس؛ أدخلهما يدوياً','Could not determine the scale minimum and maximum; enter them manually');
  vars.forEach((c,k)=>{const o=store.vars[c],out=cols[k].map(x=>typeof x==='number'?lo+hi-x:null),nv=typedVar(o.name,out),nm=uniqueName(o.name+(suffix||'_r'),taken);nv.name=nm;nv.label=o.label?`${o.label} (reversed)`:'(reversed)';nv.decimals=o.decimals;vs.push(nv);cs.push(out);done.push(nm)});
- replaceAll({name:store.name,vars:vs,cols:cs,n:store.n},false);return{done,lo,hi}}
+ replaceAll({name:store.name,vars:vs,cols:cs,n:store.n},false,{fn:'data.reverse',title:'Reverse-code items',fields:{vars:vars.map(i=>store.vars[i].name)},opts:{min,max,...(suffix?{suffix}:{})}});return{done,lo,hi}}
 
 // ================= 6) ترتيب الحالات =================
 export function sortOrder(a,desc,isNum){const idx=Array.from({length:a.length},(_,i)=>i),dir=desc?-1:1;
@@ -120,7 +122,7 @@ export function sortOrder(a,desc,isNum){const idx=Array.from({length:a.length},(
 export function sortCases({by,desc}){setFilter(null);const keys=by.map(c=>({a:store.cols[c],num:store.vars[c].type==='Numeric'}));let idx=Array.from({length:store.n},(_,i)=>i);
  // فرز مستقر متعدد المفاتيح: من آخر مفتاح إلى أول مفتاح
  for(let k=keys.length-1;k>=0;k--){const {a,num}=keys[k],sub=idx.map(i=>a[i]),ord=sortOrder(sub,desc,num);idx=ord.map(j=>idx[j])}
- replaceAll({name:store.name,vars:store.vars.slice(),cols:store.cols.map(c=>{const o=new Array(store.n);for(let r=0;r<store.n;r++)o[r]=c[idx[r]]??null;return o}),n:store.n},false)}
+ replaceAll({name:store.name,vars:store.vars.slice(),cols:store.cols.map(c=>{const o=new Array(store.n);for(let r=0;r<store.n;r++)o[r]=c[idx[r]]??null;return o}),n:store.n},false,{fn:'data.sort',title:'Sort cases',fields:{by:by.map(c=>store.vars[c].name)},opts:{order:desc?'descending':'ascending'}})}
 
 // ================= 7) الواجهة =================
 const say=t=>{document.querySelector('#status').textContent=t};

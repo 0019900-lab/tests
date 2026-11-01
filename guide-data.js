@@ -68,6 +68,9 @@ normality:{what:['اختبار شابيرو–ويلك مع الالتواء و�
 about:{what:['معلومات الإصدار والشعار.','Version info and logo.'],how:['—','—']}};
 // قاعدة: «الجديد» للإضافات الجديدة فقط، كل بند بصيغة «الميزة — مكانها» بإيجاز. لا تُكتب الإصلاحات ولا التعديلات. الإصدار الذي لا يضيف ميزة لا سطر له.
 export const CHANGELOG=[
+['0.18.1',['منشئ التقارير: اختيار عناصر التقرير وترتيبها بالأسهم قبل التصدير — المخرجات ← تصدير ← منشئ التقارير','Report builder: choose and reorder report items before export — Output → Export → Report builder']],
+['0.18.0',['منشئ التقارير: عنوان ومؤلف ومقدمة وملحق سجل العمليات بصيغة Word أو HTML — المخرجات ← تصدير ← منشئ التقارير','Report builder: title, author, intro and operations-log appendix as Word or HTML — Output → Export → Report builder']],
+['0.17.2',['سجل العمليات يسجّل أيضاً عمليات تجهيز البيانات (حساب، إعادة ترميز، دمج، ترتيب...) — المخرجات ← تصدير ← سجل العمليات','The operations log now also records data preparation (compute, recode, merge, sort…) — Output → Export → Operations log']],
 ['0.17.1',['سجل العمليات يشمل الرسوم ويُحفظ داخل ملف المشروع .smart — المخرجات ← تصدير ← سجل العمليات','The operations log now includes charts and is saved inside the .smart project — Output → Export → Operations log']],
 ['0.17.0',['سجل العمليات: يسجّل كل تحليل بالمتغيرات والخيارات ويُصدَّر كملف Markdown — المخرجات ← تصدير ← سجل العمليات','Operations log: records each analysis with variables and options, exported as Markdown — Output → Export → Operations log']],
 ['0.16.1',['دمج الملفات يقبل ملفات SPSS (.sav) — بيانات ← دمج الملفات','File merge accepts SPSS (.sav) files — Data → Merge files']],

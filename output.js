@@ -2,7 +2,7 @@
 import {T,lang,isolateLatin} from './i18n.js';
 import {ic} from './icons.js';
 import {buildDocx} from './docx.js';
-import {toMarkdown as logMD} from './oplog.js';
+import {toMarkdown as logMD,getLog} from './oplog.js';import {buildReportItems} from './reportbuilder.js';import {dialog} from './dialog.js';import {pickItems} from './reportpick.js';
 import {esc,tableHTML,figHTML,explainHTML,itemsHTML,docHTML,wordHTML,toMarkdown,toTSV,sheetsAOA} from './report.js';
 import {explain} from './explain.js';import {chartSVG} from './charts.js';
 const $=s=>document.querySelector(s),say=t=>{$('#status').textContent=t};
@@ -49,6 +49,18 @@ export const EXPORT={
   dl(`Smart-Analysis-output-${stamp()}.docx`,buildDocx(it,opts()),'application/vnd.openxmlformats-officedocument.wordprocessingml.document');say(T('تم تصدير ملف Word (.docx)','Exported Word (.docx)'))},
  pdf(){if(!need())return;const f=document.createElement('iframe');f.style.cssText='position:fixed;width:0;height:0;border:0';document.body.append(f);
   f.srcdoc=docHTML(items,opts());f.onload=()=>{f.contentWindow.focus();f.contentWindow.print();setTimeout(()=>f.remove(),2000)};say(T('اختر «حفظ بصيغة PDF» من نافذة الطباعة','Choose "Save as PDF" in the print dialog'))},
+ report(){if(!need())return;pickItems(items,ids=>EXPORT.report2(ids))},
+ report2(ids){
+  dialog('rp',{title:['منشئ التقارير','Report builder'],go:['إنشاء التقرير','Create report'],fields:[],options:[
+   {key:'title',type:'text',label:['عنوان التقرير','Report title'],def:''},{key:'author',type:'text',label:['اسم المؤلف','Author'],def:''},{key:'intro',type:'text',label:['مقدمة قصيرة (اختياري)','Short introduction (optional)'],def:''},
+   {key:'kinds',type:'sel',label:['المحتوى','Content'],def:'all',opts:[['all',['كل المخرجات','Everything']],['results',['الجداول فقط','Tables only']],['charts',['الرسوم فقط','Charts only']]]},
+   {key:'format',type:'sel',label:['الصيغة','Format'],def:'docx',opts:[['docx',['Word (.docx)','Word (.docx)']],['html',['HTML','HTML']]]},
+   {key:'explain',type:'check',label:['إرفاق «فسّر نتائجي»','Include “Explain my results”'],def:false},{key:'appendLog',type:'check',label:['ملحق سجل العمليات','Append operations log'],def:true}],
+   need:()=>''},
+  v=>{const list=buildReportItems(items,getLog(),{...v,ids,lang:lang()});
+   (async()=>{if(v.format==='html')dl(`Smart-Analysis-report-${stamp()}.html`,docHTML(list,opts()),'text/html;charset=utf-8');
+    else{const it=await Promise.all(list.map(async x=>x.type==='chart'?{...x,png:await png(chartSVG(x.kind,x.spec,{lang:lang(),ink:'#1b2230'}))}:x));dl(`Smart-Analysis-report-${stamp()}.docx`,buildDocx(it,opts()),'application/vnd.openxmlformats-officedocument.wordprocessingml.document')}
+    say(T('تم إنشاء التقرير','Report created'))})().catch(e=>say(e.message))})},
  log(){dl(`Smart-Analysis-log-${stamp()}.md`,'\ufeff'+logMD({lang:lang()}),'text/markdown;charset=utf-8');say(T('تم تصدير سجل العمليات','Exported operations log'))},
  md(){if(need()){dl(`Smart-Analysis-output-${stamp()}.md`,toMarkdown(items,opts()),'text/markdown;charset=utf-8');say(T('تم تصدير Markdown','Exported Markdown'))}},
  async xlsx(){if(!need())return;const X=await loadXlsx();if(!X)return say(T('مكتبة Excel غير متاحة (vendor/xlsx.full.min.js)','Excel library missing (vendor/xlsx.full.min.js)'));
@@ -73,7 +85,7 @@ export function initOutput(){const pane=$('#outputPane');
  const st=B('table','style',()=>{apa=!apa;localStorage.apa=apa?'1':'0';render();lab()},'txtb');
  const ex=B('export','export',e=>{e.stopPropagation();menu.classList.toggle('open')});
  const menu=document.createElement('div');menu.className='xmenu';tb.append(menu);
- const XM=[['html','html','HTML'],['word','word','Word (.docx)'],['pdf','pdf','PDF'],['md','md','Markdown'],['log','md','Operations log (.md)'],['xlsx','excel','Excel (.xlsx)'],['copyAll','copy','']];
+ const XM=[['html','html','HTML'],['word','word','Word (.docx)'],['pdf','pdf','PDF'],['md','md','Markdown'],['log','md','Operations log (.md)'],['report','word','Report builder…'],['xlsx','excel','Excel (.xlsx)'],['copyAll','copy','']];
  menu.onclick=e=>{const b=e.target.closest('[data-x]');if(b){menu.classList.remove('open');EXPORT[b.dataset.x]()}};
  document.addEventListener('click',()=>menu.classList.remove('open'));
  B('trash','clear',clearOutput);

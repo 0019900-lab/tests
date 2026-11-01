@@ -30,6 +30,7 @@ export function buildDocx(items,o={}){const en=o.lang==='en',rtl=!en,apa=o.apa!=
  const jc=rtl?'right':undefined,P=(r,x={})=>para(r,{rtl,jc,...x});
  body.push(P(run('Smart-Analysis',{b:1,sz:36,color:'4338CA'}),{style:'Title'}),P(run(new Date().toLocaleString(en?'en-GB':'ar-EG'),{color:'6B7488',sz:20})));
  for(const it of items){
+  if(it.type==='text'&&it.h){body.push(P(run(it.text,{b:1,sz:32,color:'4338CA'}),{style:'Heading1',keep:1}));continue}
   if(it.type==='text'){body.push(P(run(it.text),{fill:'FFFBE6'}));continue}
   body.push(P(run(it.title,{b:1,color:'4338CA'}),{style:'Heading1',keep:1}));
   if(it.collapsed){c[it.type==='chart'?'f':'n']+=it.type==='chart'?1:it.tables.length;continue}
