@@ -68,6 +68,10 @@ normality:{what:['اختبار شابيرو–ويلك مع الالتواء و�
 about:{what:['معلومات الإصدار والشعار.','Version info and logo.'],how:['—','—']}};
 // قاعدة: «الجديد» للإضافات الجديدة فقط، كل بند بصيغة «الميزة — مكانها» بإيجاز. لا تُكتب الإصلاحات ولا التعديلات. الإصدار الذي لا يضيف ميزة لا سطر له.
 export const CHANGELOG=[
+['0.17.1',['سجل العمليات يشمل الرسوم ويُحفظ داخل ملف المشروع .smart — المخرجات ← تصدير ← سجل العمليات','The operations log now includes charts and is saved inside the .smart project — Output → Export → Operations log']],
+['0.17.0',['سجل العمليات: يسجّل كل تحليل بالمتغيرات والخيارات ويُصدَّر كملف Markdown — المخرجات ← تصدير ← سجل العمليات','Operations log: records each analysis with variables and options, exported as Markdown — Output → Export → Operations log']],
+['0.16.1',['دمج الملفات يقبل ملفات SPSS (.sav) — بيانات ← دمج الملفات','File merge accepts SPSS (.sav) files — Data → Merge files']],
+['0.16.0',['تصدير Word بصيغة .docx حقيقية (جداول APA وأشكال ومعادلات الشرح) — المخرجات ← تصدير ← Word','Real Word (.docx) export (APA tables, figures, explanations) — Output → Export → Word']],
 ['0.15.0',['تعريف خصائص المتغير (فحص القيم واقتراح مستوى القياس) — بيانات ← تعريف خصائص المتغير','Define Variable Properties (scan values, suggest measurement level) — Data → Define Variable Properties']],
 ['0.14.0',['ترجيح الحالات (أوزان تكرارية) — بيانات ← ترجيح الحالات','Weight Cases (frequency weights) — Data → Weight Cases']],
 ['0.13.0',['التحليل العاملي (KMO وBartlett وVarimax) — تحليل ← المقاييس','Factor analysis (KMO, Bartlett, Varimax) — Analyze → Scale']],

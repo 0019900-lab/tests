@@ -2,7 +2,7 @@
 
 > **الغرض:** يتيح هذا الملف لأي جلسة جديدة (أو أي مطوّر) أن تكمل العمل دون شرح مسبق. حدّثه في نهاية كل مرحلة.
 
-**الإصدار:** 0.15.0 · **آخر تحديث:** 2026-11-01 · **المراحل المكتملة:** 1، 2، 3، 4، و5 (ما عدا التحليل العاملي وترجيح الحالات وتعريف خصائص المتغير) · **التالي:** المرحلة 6 (منشئ التقارير و`.docx` حقيقي وسجل العمليات)، ثم المرحلة 6
+**الإصدار:** 0.17.1 · **آخر تحديث:** 2026-11-01 · **المراحل المكتملة:** 1، 2، 3، 4، و5 (ما عدا التحليل العاملي وترجيح الحالات وتعريف خصائص المتغير) · **التالي:** المرحلة 6 (منشئ التقارير و`.docx` حقيقي وسجل العمليات)، ثم المرحلة 6
 **الاسم:** Smart-Analysis (كان StatLab). امتداد ملف المشروع ما زال `.smart` (وتبقى `.statlab` القديمة مقروءة) للتوافق مع الملفات المحفوظة سابقاً.
 
 
@@ -133,6 +133,7 @@ python3 -m http.server 8000        # ثم افتح http://localhost:8000
 node tests/data.test.mjs && node tests/stats.test.mjs && node tests/analyses.test.mjs && node tests/xlsx.test.mjs && node tests/report.test.mjs && node tests/phase5.test.mjs && node tests/wizard.test.mjs && node tests/phase5.analyses.test.mjs && node tests/formats.test.mjs && node tests/logistic.test.mjs && node tests/transform.test.mjs && node tests/sav.test.mjs && node tests/charts.test.mjs && node tests/factor.test.mjs && node tests/weight.test.mjs && node tests/props.test.mjs && node tests/explain.test.mjs
 python3 tests/ui.smoke.py          # يحتاج playwright + chromium؛ 22 فحصاً؛ اللقطات في /tmp/shots
 python3 tests/ui.phase5.py         # 13 فحصاً للمعالج والتحاليل الجديدة؛ اللقطات في /tmp/shots5
+python3 tests/ui.phase6.py         # 10 فحوص: التحليل العاملي وترجيح الحالات وتعريف خصائص المتغير (0.13–0.15)؛ اللقطات في /tmp/shots6b
 python3 tests/ui.vars.py           # 20 فحصاً لـ Variable View واللغة؛ اللقطات في /tmp/shots6
 ```
 **تحديث 0.12.11:** أُضيف `tests/charts.test.mjs` (59 فحصاً) و`tests/explain.test.mjs` (65 فحصاً)؛ التنبيه التالي لم يعد قائماً. **تنبيه قديم:** كانت النسخة السابقة من هذا الملف تذكر `tests/charts.test.mjs` و`tests/explain.test.mjs` وأن `ui.smoke.py` يضم 36 فحصاً، لكنها **غير موجودة** في الأرشيف المسلَّم (والموجود 22 فحصاً). الأولوية القادمة: كتابة اختبارات الرسوم (`charts.js`) واختبارات «فسّر نتائجي» للتحاليل القديمة (تغطّي التحاليل الجديدة `phase5.analyses.test.mjs` فقط).
@@ -157,14 +158,32 @@ python3 tests/ui.vars.py           # 20 فحصاً لـ Variable View واللغ
 5. المرحلة 6 (منشئ التقارير و`.docx` حقيقي وسجل العمليات).
 6. في نهاية كل جلسة: `node tools/bump.mjs <الإصدار>`، حدّث هذا الملف، وأعد بناء ملف العرض (`tools/deck/`) عند الحاجة.
 
+**ملاحظة بيئة الاختبار:** في بيئة بلا إنترنت يفشل فحص «no console errors» في `ui.smoke.py` و`ui.phase5.py` بسبب خط Google Fonts (`ERR_NAME_NOT_RESOLVED`) — ليس عطلاً في التطبيق؛ `ui.phase6.py` يتجاهل هذا الخطأ. في `dialog.js` خيارات الحوار تُحدَّد بـ `data-o` والحقول بـ `data-k`.
+
+### v0.17.1 — السجل يشمل الرسوم ويُحفظ مع المشروع
+- `openC` يسجّل `chart.<نوع>`؛ `save/saveAs` في `files.js` يكتبان `o.oplog`، وفتح `.smart` يستدعي `setLog` (يتجاهل العناصر التالفة). **ما زال ناقصاً:** عمليات تجهيز البيانات (`transform.js`/`prep2.js`) لا تُسجَّل، والسجل لا يُصفَّر عند ملف جديد (كل سطر يحمل اسم البيانات `data`).
+
+### v0.17.0 — سجل العمليات
+- `oplog.js` (نقي): `describe(spec,v,vars)` يحوّل مدخلات نافذة الحوار إلى أسماء متغيرات وخيارات، `addOp/getLog/clearLog/toMarkdown/toScript`. `open()` في `analyses.js` يسجّل بعد كل تحليل ناجح (وبعد التقسيم بملاحظة). `EXPORT.log` في `output.js` + عنصر «Operations log (.md)» في قائمة التصدير؛ `tests/oplog.test.mjs` (7 فحوص) و`ui.phase6.py` (10) يعملان.
+- **حدود:** يسجّل تحليلات `open()` فقط — لا الرسوم (`openC`) ولا عمليات تجهيز البيانات ولا يُحفظ السجل في ملف المشروع؛ `toScript` صيغة وصفية وليست كوداً قابلاً للتنفيذ بعد.
+- **التالي:** تسجيل الرسوم وتجهيز البيانات، حفظ السجل في المشروع، ثم منشئ التقارير.
+
+### v0.16.1 — دمج الملفات يقرأ `.sav`
+- `readState` في `merge.js` يستدعي `readSav` (يرمي خطأً واضحاً لـ`.zsav` أو ملف غير صالح) وقائمة الاختيار تقبل `.sav`. `tests/mergesav.test.mjs` (ذهاب وإياب writeSav→readSav→دمج). **التالي:** منشئ التقارير وسجل العمليات (المرحلة 6).
+
+### v0.16.0 — Word (.docx) حقيقي — للمطوّر القادم
+- `docx.js` (بلا اعتماديات): `zip` (STORE + CRC32) و`buildDocx(items,{lang,apa})` يبني `document.xml` وأنماطاً؛ جداول APA (خطوط أفقية فقط ورأس مكرَّر)، عناوين، شروح «فسّر نتائجي»، سطور APA، ودعم RTL (`w:bidi`). الرسوم تُضمَّن كـPNG من `png()` في `output.js`؛ بدونها تُكتب جملة بديلة.
+- `EXPORT.word` في `output.js` صار يُصدِّر `.docx` (ولا يزال `wordHTML` موجوداً للتوافق). `tests/docx.test.mjs` + فُحص بـpython-docx (جدول/صورة/أرقام APA) **ولم يُجرَّب في Word الفعلي**.
+- **التالي:** منشئ التقارير وسجل العمليات/تصدير الكود (المرحلة 6)، ودمج الملفات يقرأ `.sav`.
+
 ### v0.15.0 — تعريف خصائص المتغير — للمطوّر القادم
 - `props.js` (دوال نقية): `scanVar(v,raw)` و`suggestMeasure`. الواجهة `TR2.props` في `prep2.js`؛ تعرض جدول فحص (عدد القيم المميزة، المدى، القيم بلا تسمية، المستوى الحالي/المقترح) واختيارياً تطبّق المقترح عبر `setVar` (قابل للتراجع). ملف `props.js` مضاف إلى كاش `sw.js`.
-- **حدود:** الاقتراح تقديري؛ لا ينشئ تسميات قيم تلقائياً ولا يعدّل المفقودة؛ لم يُجرَّب في المتصفح الفعلي.
+- **حدود:** الاقتراح تقديري؛ لا ينشئ تسميات قيم تلقائياً ولا يعدّل المفقودة؛ جُرِّب في Chromium (`ui.phase6.py`).
 
 ### v0.14.0 — ترجيح الحالات — للمطوّر القادم
 - `analyses.js`: `getWeight/setWeight/weightIndex/withWeight`. الترجيح **تكراري**: `open()` كله ملفوف بـ `withWeight` فيُكرَّر كل صف بعدد = الوزن (مقرَّب لأقرب عدد صحيح؛ صفر/سالب/مفقود يُستبعد) ويُبدَّل `store.cols/n` والمرشّح مؤقتاً ثم يُستعاد في `finally`. النتائج تساوي التحليل على بيانات مكرَّرة فعلياً (`tests/weight.test.mjs`، 17 فحصاً). عنوان كل كتلة يحمل `(weighted: name)`.
 - الواجهة: `TR2.weight` في `prep2.js` وشارة `#wgtBadge`؛ القائمة: بيانات ← ترجيح الحالات.
-- **حدود:** الأوزان غير الصحيحة تُقرَّب (لا ترجيح كسري)؛ سقف 3 ملايين حالة مرجَّحة؛ الرسوم لا تتأثر (لا تمرّ بـ `open()`)؛ الترجيح لا يُحفظ في ملف المشروع؛ لم يُجرَّب في المتصفح الفعلي.
+- **حدود:** الأوزان غير الصحيحة تُقرَّب (لا ترجيح كسري)؛ سقف 3 ملايين حالة مرجَّحة؛ الرسوم لا تتأثر (لا تمرّ بـ `open()`)؛ الترجيح لا يُحفظ في ملف المشروع؛ جُرِّب في Chromium (`ui.phase6.py`).
 
 ### v0.13.0 — التحليل العاملي — للمطوّر القادم
 - `stats.js`: `jacobiEig`, `varimax` (Kaiser normalization), `factor(cols,{nf,rotate})` → KMO وMSA وBartlett والقيم الذاتية والتشبعات والشيوع. الاستخلاص **مكونات رئيسة (PCA)** فقط، لا ML ولا Promax بعد. مطابق لـ numpy/scipy في `tests/factor.test.mjs` (المرجع في `fixtures_factor.json`).

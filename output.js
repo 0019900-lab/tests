@@ -1,6 +1,8 @@
 // StatLab – عارض المخرجات (المرحلة 3): جداول APA، ملاحظات، فهرس، تصدير HTML / Word / PDF / Markdown / Excel
 import {T,lang,isolateLatin} from './i18n.js';
 import {ic} from './icons.js';
+import {buildDocx} from './docx.js';
+import {toMarkdown as logMD} from './oplog.js';
 import {esc,tableHTML,figHTML,explainHTML,itemsHTML,docHTML,wordHTML,toMarkdown,toTSV,sheetsAOA} from './report.js';
 import {explain} from './explain.js';import {chartSVG} from './charts.js';
 const $=s=>document.querySelector(s),say=t=>{$('#status').textContent=t};
@@ -44,9 +46,10 @@ const stamp=()=>new Date().toISOString().slice(0,10);
 export const EXPORT={
  html(){if(need()){dl(`Smart-Analysis-output-${stamp()}.html`,docHTML(items,opts()),'text/html;charset=utf-8');say(T('تم تصدير HTML','Exported HTML'))}},
  async word(){if(!need())return;const it=await Promise.all(items.map(async x=>x.type==='chart'?{...x,png:await png(chartSVG(x.kind,x.spec,{lang:lang(),ink:'#1b2230'}))}:x));
-  dl(`Smart-Analysis-output-${stamp()}.doc`,'\ufeff'+wordHTML(it,opts()),'application/msword');say(T('تم تصدير ملف Word (.doc)','Exported Word (.doc)'))},
+  dl(`Smart-Analysis-output-${stamp()}.docx`,buildDocx(it,opts()),'application/vnd.openxmlformats-officedocument.wordprocessingml.document');say(T('تم تصدير ملف Word (.docx)','Exported Word (.docx)'))},
  pdf(){if(!need())return;const f=document.createElement('iframe');f.style.cssText='position:fixed;width:0;height:0;border:0';document.body.append(f);
   f.srcdoc=docHTML(items,opts());f.onload=()=>{f.contentWindow.focus();f.contentWindow.print();setTimeout(()=>f.remove(),2000)};say(T('اختر «حفظ بصيغة PDF» من نافذة الطباعة','Choose "Save as PDF" in the print dialog'))},
+ log(){dl(`Smart-Analysis-log-${stamp()}.md`,'\ufeff'+logMD({lang:lang()}),'text/markdown;charset=utf-8');say(T('تم تصدير سجل العمليات','Exported operations log'))},
  md(){if(need()){dl(`Smart-Analysis-output-${stamp()}.md`,toMarkdown(items,opts()),'text/markdown;charset=utf-8');say(T('تم تصدير Markdown','Exported Markdown'))}},
  async xlsx(){if(!need())return;const X=await loadXlsx();if(!X)return say(T('مكتبة Excel غير متاحة (vendor/xlsx.full.min.js)','Excel library missing (vendor/xlsx.full.min.js)'));
   const sh=sheetsAOA(items);if(!sh.length)return say(T('لا توجد جداول','No tables'));const wb=X.utils.book_new();sh.forEach(s=>X.utils.book_append_sheet(wb,X.utils.aoa_to_sheet(s.aoa),s.name));
@@ -70,7 +73,7 @@ export function initOutput(){const pane=$('#outputPane');
  const st=B('table','style',()=>{apa=!apa;localStorage.apa=apa?'1':'0';render();lab()},'txtb');
  const ex=B('export','export',e=>{e.stopPropagation();menu.classList.toggle('open')});
  const menu=document.createElement('div');menu.className='xmenu';tb.append(menu);
- const XM=[['html','html','HTML'],['word','word','Word (.doc)'],['pdf','pdf','PDF'],['md','md','Markdown'],['xlsx','excel','Excel (.xlsx)'],['copyAll','copy','']];
+ const XM=[['html','html','HTML'],['word','word','Word (.docx)'],['pdf','pdf','PDF'],['md','md','Markdown'],['log','md','Operations log (.md)'],['xlsx','excel','Excel (.xlsx)'],['copyAll','copy','']];
  menu.onclick=e=>{const b=e.target.closest('[data-x]');if(b){menu.classList.remove('open');EXPORT[b.dataset.x]()}};
  document.addEventListener('click',()=>menu.classList.remove('open'));
  B('trash','clear',clearOutput);

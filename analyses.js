@@ -6,6 +6,7 @@ import {addBlock,addChart} from './output.js';
 import {dialog} from './dialog.js';
 import * as CH from './charts.js';
 import {ic} from './icons.js';
+import {describe,addOp} from './oplog.js';
 const {fx,fnz,fp,apaP}=S;
 function missSet(v){if(!v.missing)return null;const s=new Set();for(const t of v.missing.split(/[,;\s]+/)){if(t==='')continue;if(v.type==='Numeric'){const n=parseNum(t);if(n!==null&&!Number.isNaN(n))s.add(n)}else s.add(t)}return s.size?s:null}
 // مرشّح «اختيار الحالات»: قناع منطقي بطول عدد الحالات؛ تُعدّ الحالات المستبعدة مفقودة في كل التحاليل (raw=true يتجاهله، لتجهيز البيانات)
@@ -211,10 +212,10 @@ export function withWeight(fn){const W=getWeight();if(!W)return fn();const {idx}
  finally{store.cols=save.cols;store.n=save.n;FILT=F}}
 const open=(id,spec,fn)=>()=>{if(!store.vars.length){say(T('حمّل البيانات أولاً (ملف ← بيانات تجريبية)','Load data first (File → Demo data)'));return}
  dialog(id,spec,v=>withWeight(()=>{const t0=performance.now(),sp=getSplit();
-  if(!sp){const b=RUN[fn](v);addBlock(b.title+WL(),b.tables,b.apa,b.facts);say(`${b.title} — ${Math.round(performance.now()-t0)} ms`);return}
+  if(!sp){const b=RUN[fn](v);addBlock(b.title+WL(),b.tables,b.apa,b.facts);addOp({fn,title:b.title,data:store.name||'',...describe(spec,v,store.vars)});say(`${b.title} — ${Math.round(performance.now()-t0)} ms`);return}
   const base=getFilter(),gs=splitGroups(sp.vars);if(!gs.length)throw new Error(T('لا توجد مجموعات صالحة للتقسيم','No valid split groups'));let ok=0,skipped=[],first=null;
   try{for(const g of gs){setFilter({mask:g.mask,n:g.n,desc:'split'},true);try{const b=RUN[fn](v);addBlock(`${b.title}${WL()} — ${g.label}`,b.tables,b.apa,b.facts);ok++}catch(e){skipped.push(g.label);first=first||e}}}finally{setFilter(base,true)}
-  if(!ok)throw first;say(T(`اكتمل التحليل لـ ${ok} مجموعة${skipped.length?` (تعذّر في ${skipped.length}: ${skipped.join(' | ')})`:''}`,`Done for ${ok} group(s)${skipped.length?` (skipped ${skipped.length}: ${skipped.join(' | ')})`:''}`))}))};
+  if(!ok)throw first;addOp({fn,title:fn,data:store.name||'',note:T(`مقسَّم على ${ok} مجموعة`,`split into ${ok} group(s)`),...describe(spec,v,store.vars)});say(T(`اكتمل التحليل لـ ${ok} مجموعة${skipped.length?` (تعذّر في ${skipped.length}: ${skipped.join(' | ')})`:''}`,`Done for ${ok} group(s)${skipped.length?` (skipped ${skipped.length}: ${skipped.join(' | ')})`:''}`))}))};
 const chk=(key,label,def)=>({key,type:'check',label,def});
 // ---------- الرسوم (المرحلة 4) ----------
 const nm=c=>store.vars[c].name,few=(a,n)=>{if(a.length<n)throw new Error(T(`عدد القيم الصالحة قليل (${a.length})`,`Too few valid values (${a.length})`))};
@@ -232,7 +233,7 @@ const CHART={
    return[{kind:'bar',title:`Bar Chart: ${V.name}`,cap:`${v.pct?'Percent':'Count'} by ${V.name}`,spec:CH.barSpec(k.map(x=>({label:lab(lm,x),count:m.get(x)})),{pct:v.pct,xName:V.name})}]}
   const m=split(v.num,v.cat);return[{kind:'bar',title:`Bar Chart: mean ${nm(v.num)} by ${V.name}`,cap:`Mean ${nm(v.num)} by ${V.name}`,spec:CH.barSpec(k.filter(x=>m.has(x)).map(x=>({label:lab(lm,x),vals:m.get(x)})),{mode:'mean',errors:v.err,xName:V.name,yName:T(`متوسط ${nm(v.num)}`,`Mean ${nm(v.num)}`)})}]}};
 const openC=(id,spec,fn)=>()=>{if(!store.vars.length){say(T('حمّل البيانات أولاً (ملف ← بيانات تجريبية)','Load data first (File → Demo data)'));return}
- dialog(id,spec,v=>{const t0=performance.now(),L=CHART[fn](v);L.forEach(c=>addChart(c.title,c.kind,c.spec,c.cap));say(`${L[0].title} — ${Math.round(performance.now()-t0)} ms`)})};
+ dialog(id,spec,v=>{const t0=performance.now(),L=CHART[fn](v);L.forEach(c=>addChart(c.title,c.kind,c.spec,c.cap));addOp({fn:'chart.'+fn,title:L[0].title,data:store.name||'',...describe(spec,v,store.vars)});say(`${L[0].title} — ${Math.round(performance.now()-t0)} ms`)})};
 const CHOOSE=[['histogram','hist',['المدرج التكراري','Histogram'],['شكل توزيع متغير رقمي','Shape of a numeric variable']],['bar','barc',['مخطط الأعمدة','Bar chart'],['تكرارات الفئات أو متوسطاتها','Counts or means by category']],['boxplot','box',['مخطط الصندوق','Boxplot'],['الوسيط والانتشار والقيم الشاذة','Median, spread and outliers']],['scatter','scat',['مخطط الانتشار','Scatter plot'],['العلاقة بين متغيرين مع خط الاتجاه','Two variables with a trend line']],['qq','qqi',['مخطط Q-Q','Q-Q plot'],['فحص اعتدالية التوزيع','Check normality']]];
 function chooser(){if(document.querySelector('.gpick'))return;const ov=document.createElement('div');ov.className='dlgov gpick';
  ov.innerHTML=`<div class="dlg gp" dir="${document.documentElement.dir}"><h3>${T('اختر نوع الرسم','Choose a chart')}</h3><div class="gtiles">${CHOOSE.map(([k,i,n,d],x)=>`<button data-k="${k}" style="--d:${x*45}ms">${ic(i,34)}<b>${T(n[0],n[1])}</b><small>${T(d[0],d[1])}</small></button>`).join('')}</div></div>`;

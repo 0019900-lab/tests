@@ -7,4 +7,4 @@
 مكتبة SheetJS 0.20.3 موجودة جاهزة في `vendor/`، وبتتحمل تلقائياً عند فتح ملف Excel (أول ورقة).
 
 ## الاختبارات
-`node tests/data.test.mjs` و `node tests/xlsx.test.mjs` و `node tests/stats.test.mjs` (مقارنة مع SciPy) و `node tests/analyses.test.mjs` و`node tests/report.test.mjs` و`node tests/charts.test.mjs` و`node tests/explain.test.mjs`، واختبار الواجهة: `python3 tests/ui.smoke.py`
+`node tests/data.test.mjs` و `node tests/xlsx.test.mjs` و `node tests/stats.test.mjs` (مقارنة مع SciPy) و `node tests/analyses.test.mjs` و`node tests/report.test.mjs` و`node tests/charts.test.mjs` و`node tests/explain.test.mjs` و`node tests/docx.test.mjs`، واختبار الواجهة: `python3 tests/ui.smoke.py`
