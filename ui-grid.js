@@ -3,7 +3,7 @@ import {T} from './i18n.js';import {letter} from './keys.js';
 import {store,cell,show,commit,subscribe,setVar,undo,redo,FORMATS,fmtOf} from './data.js';
 import {pick,glyph,labelOf,GL,openValues,openMissing,askText,parseValues,closePop} from './varpicker.js';
 const $=s=>document.querySelector(s),say=t=>{$('#status').textContent=t};
-const RH=26,CW=100,NW=52;
+const RH=26,CW=100;let NW=52;
 const wrap=$('#gridWrap'),grid=$('#grid'),vg=$('#varGrid'),cellInput=$('#cellInput');
 const ed=document.createElement('input');ed.id='cellEditor';ed.hidden=true;
 let sel={r:0,c:0},anc={r:0,c:0},view='data',raf=0,editing=false,drag=false;
@@ -18,7 +18,8 @@ const raw=(r,c)=>String(cell(r,c));
 const isField=t=>t&&(t.tagName==='INPUT'||t.tagName==='SELECT'||t.tagName==='TEXTAREA');
 const schedule=()=>{if(!raf)raf=requestAnimationFrame(render)};
 function render(){raf=0;if(view!=='data')return;
- const{R,C}=dims(),first=Math.max(0,Math.floor(wrap.scrollTop/RH)-6),last=Math.min(R,first+Math.ceil(wrap.clientHeight/RH)+14),q=rng();
+ const{R,C}=dims();NW=Math.max(52,String(R).length*9+24);
+ const first=Math.max(0,Math.floor(wrap.scrollTop/RH)-6),last=Math.min(R,first+Math.ceil(wrap.clientHeight/RH)+14),q=rng();
  let h=`<colgroup><col style="width:${NW}px">`+Array.from({length:C},(_,c)=>`<col style="width:${cw(c)}px">`).join('')+'</colgroup><thead><tr><th class="corner"></th>';
  for(let c=0;c<C;c++){const v=store.vars[c];h+=`<th data-hc="${c}" class="${v?'':'undef'}" title="${esc(v?v.label:'')}">${v?esc(v.name):''}</th>`}
  h+='</tr></thead><tbody>';
