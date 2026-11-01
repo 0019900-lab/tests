@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';import {scanVar,suggestMeasure} from '../props.js';import {mkVar} from '../data.js';
+let ok=0;const t=(n,c)=>{assert.ok(c,n);ok++};
+t('string→Nominal',suggestMeasure({type:'String',distinct:50})==='Nominal');t('binary→Nominal',suggestMeasure({type:'Numeric',distinct:2,allInt:true})==='Nominal');
+t('likert→Ordinal',suggestMeasure({type:'Numeric',distinct:5,allInt:true})==='Ordinal');t('labelled small→Nominal',suggestMeasure({type:'Numeric',distinct:3,allInt:true,labeled:true})==='Nominal');
+t('continuous→Scale',suggestMeasure({type:'Numeric',distinct:80,allInt:false})==='Scale');t('many ints→Scale',suggestMeasure({type:'Numeric',distinct:40,allInt:true})==='Scale');t('date→Scale',suggestMeasure({type:'Numeric',fmt:'Date dd/mm/yyyy',distinct:3,allInt:true})==='Scale');
+const v={...mkVar('sex','Numeric'),values:'1=ذكر;2=أنثى',measure:'Scale'};const r=scanVar(v,[1,2,2,3,null,1,'',3,4]);
+t('valid n',r.n===7);t('distinct',r.distinct===4);t('range',r.min===1&&r.max===4);t('unlabeled sorted',JSON.stringify(r.unlabeled)==='[3,4]');t('change flagged',r.change&&r.current==='Scale'&&r.suggested==='Nominal'||r.suggested==='Ordinal');
+const s=scanVar({...mkVar('g','String'),measure:'Nominal'},['a','b','a',null]);t('string scan',s.distinct===2&&s.min===null&&!s.change&&s.unlabeled.length===0);
+t('no labels → no unlabeled',scanVar(mkVar('x'),[1,2,3]).unlabeled.length===0);
+const big=scanVar(mkVar('z'),Array.from({length:1000},(_,i)=>i+.5),50);t('cap',big.capped&&big.distinct===50&&big.suggested==='Scale'&&!big.allInt);
+t('empty column',scanVar(mkVar('e'),[null,null]).n===0);
+console.log(`props: ${ok} passed`);
