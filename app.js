@@ -1,6 +1,6 @@
 import * as G from './ui-grid.js';import * as F from './files.js';import {store,undo,redo} from './data.js';import {A} from './analyses.js';
 import {initOutput,addText,clearOutput,EXPORT,explainLast,setPane,paneOpen} from './output.js';import {T} from './i18n.js';import {letter} from './keys.js';import {openWizard} from './wizard.js';import {TR} from './transform.js';import {TR2} from './prep2.js';import {ic,ti,mark} from './icons.js';
-import {initGuide,openGuide,undocumented} from './guide.js';import {showWelcome,showAbout} from './welcome.js';import {openFind,closeFind} from './find.js';import {CONFIG} from './config.js';import {initUpdate} from './update.js';
+import {initGuide,openGuide,undocumented} from './guide.js';import {showWelcome,showAbout} from './welcome.js';import {buildMenus as bm} from './menus.js';import {openFind,closeFind} from './find.js';import {CONFIG} from './config.js';import {initUpdate} from './update.js';
 // Smart-Analysis – القوائم. كل عنصر: [عربي, English, اختصار, أمر, مرحلة] — مرحلة 0 = قريباً بدون موعد محدد
 const S='-';
 const MENUS=[
@@ -47,14 +47,7 @@ const ACT={theme(){theme=theme==='dark'?'light':'dark';applyLook()},lang(){lang=
  explain:explainLast,askDalia,exportHtml:EXPORT.html,exportWord:EXPORT.word,exportPdf:EXPORT.pdf,exportMd:EXPORT.md,exportXlsx:EXPORT.xlsx};
 function run(it){if(it[3]&&ACT[it[3]])ACT[it[3]]();else say(it[4]?T(`سيتوفر «${it[0]}» في المرحلة ${it[4]}`,`“${it[1]}” arrives in phase ${it[4]}`):T(`«${it[0]}» قريباً`,`“${it[1]}” is coming soon`))}
 const label=it=>lang==='ar'?`${it[0]} <small class="en">${it[1]}</small>`:it[1];
-function buildMenus(){const bar=$('#menubar');bar.innerHTML='';
- MENUS.forEach(m=>{const w=document.createElement('div');w.className='menu';const b=document.createElement('button');b.textContent=T(m[0],m[1]);w.append(b);
-  const dd=document.createElement('div');dd.className='dd';
-  m[2].forEach(it=>{if(it===S){dd.append(document.createElement('hr'));return}const live=it[3]&&ACT[it[3]],x=document.createElement('button');
-   x.className=live?'':'soonit';x.innerHTML=`<span class="ico">${ICON[it[3]]?ic(ICON[it[3]],16):''}</span><span class="lb">${label(it)}</span>${live?`<kbd>${it[2]}</kbd>`:`<em class="soon">${it[4]?'P'+it[4]:T('قريباً','Soon')}</em>`}`;
-   x.onclick=()=>{close();run(it)};dd.append(x)});
-  w.append(dd);b.onclick=e=>{e.stopPropagation();const o=w.classList.contains('open');close();if(!o)w.classList.add('open')};
-  b.onmouseenter=()=>{if(document.querySelector('.menu.open')){close();w.classList.add('open')}};bar.append(w)})}
+function buildMenus(){bm($('#menubar'),MENUS,{ACT,ICON,run,close})}
 function close(){document.querySelectorAll('.menu.open').forEach(x=>x.classList.remove('open'))}
 document.addEventListener('click',close);
 function buildToolbar(){const t=$('#toolbar');t.innerHTML='';let g=null,gi=-1;const open=()=>{gi++;g=document.createElement('div');g.className='grp g'+gi;t.append(g)};open();

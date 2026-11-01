@@ -635,3 +635,18 @@ tbody th{font-variant-numeric:tabular-nums;padding:0 6px;text-overflow:clip}
 .flip.turning .dth::after{animation:none}
 .flip.turning .welcome{box-shadow:0 18px 50px rgba(0,0,0,.35)}
 @media(prefers-reduced-motion:reduce){.face{will-change:auto}}
+
+/* v0.12.8: قوائم علوية مرتبة بقوائم فرعية منبثقة */
+.dd{min-width:244px;padding:6px}
+.dd .mi{display:flex;align-items:center;gap:10px;width:100%;padding:7px 10px;border-radius:8px;text-align:start;justify-content:flex-start;white-space:nowrap}
+.dd .mi:hover:not(:disabled),.msub.open>.mi{background:var(--acc2)}
+.dd .mi .lb{flex:1}.dd .mi.soonit{opacity:.5}.dd .mi:disabled{cursor:default}
+.dd hr{margin:5px 6px}
+.msub{position:relative}
+.msub>.mi .chev{display:inline-flex;color:var(--mute);margin-inline-start:auto}
+html[lang=ar] .msub>.mi .chev{transform:scaleX(-1)}
+.sd{position:absolute;top:-6px;inset-inline-start:calc(100% - 2px);min-width:236px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh);padding:6px;z-index:30;
+ visibility:hidden;opacity:0;transform:translateY(-4px);pointer-events:none;transition:opacity .12s ease,transform .12s ease,visibility 0s .12s}
+.sd.flipx{inset-inline-start:auto;inset-inline-end:calc(100% - 2px)}
+.msub.open>.sd{visibility:visible;opacity:1;transform:none;pointer-events:auto;transition-delay:0s}
+@media(prefers-reduced-motion:reduce){.sd{transition:none}}
