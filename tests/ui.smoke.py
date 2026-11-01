@@ -32,10 +32,10 @@ try:
   pg.once('dialog',lambda d:d.accept('ملاحظة اختبار'));pg.click('.otb [data-k=addText]');chk('note added',pg.locator('.blk.txt').count()==1)
   pg.click('.otb [data-k=style]');chk('style toggle',pg.locator('#outputBody.apa-on').count()==0);pg.screenshot(path=f'{out}/05_modern_tables.png');pg.click('.otb [data-k=style]')
   # find in output
-  pg.keyboard.press('Control+f');pg.wait_for_selector('#findbar:not([hidden])');pg.click('#findbar [data-f=output]');pg.fill('#findbar input','Mean');pg.wait_for_timeout(200)
+  pg.keyboard.press('Control+f');pg.wait_for_selector('#findbar:not([hidden])');pg.click('#findbar [data-f=output]');pg.fill('#findbar input','Mean');pg.wait_for_timeout(450)
   chk('output find marks',pg.locator('mark.fm').count()>0);pg.screenshot(path=f'{out}/06_find.png');pg.keyboard.press('Escape')
   # find in data
-  pg.keyboard.press('Control+f');pg.click('#findbar [data-f=data]');pg.fill('#findbar input','5');pg.wait_for_timeout(200)
+  pg.keyboard.press('Control+f');pg.click('#findbar [data-f=data]');pg.fill('#findbar input','5');pg.wait_for_timeout(450)
   chk('data find count',pg.locator('#findbar .fcnt').inner_text().startswith('1 /'));pg.keyboard.press('Escape')
   # exports
   for k,ext in [('html','.html'),('word','.doc'),('md','.md'),('xlsx','.xlsx')]:
