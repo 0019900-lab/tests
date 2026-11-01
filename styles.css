@@ -541,3 +541,89 @@ button.on{background:var(--acc-solid);box-shadow:0 2px 8px color-mix(in srgb,var
 
 .wm i{box-shadow:none}
 #menubar button{font-weight:500}
+
+/* ===== v0.12.4: مفتاحا اللغة والثيم، دليل الاختبارات، قلب صفحة الترحيب ===== */
+#tbCtl .seg{padding:3px;background:color-mix(in srgb,var(--acc) 13%,var(--head));border:1px solid color-mix(in srgb,var(--acc) 22%,var(--line))}
+#tbCtl .seg button{min-width:46px;height:28px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;line-height:1;color:var(--mute);letter-spacing:.02em}
+#tbCtl .seg button[data-l=ar]{font-size:19px;padding-bottom:3px}
+#tbCtl .seg button.on{background:var(--panel);color:var(--acc);border:1px solid color-mix(in srgb,var(--acc) 30%,var(--line));box-shadow:0 1px 4px rgba(20,40,90,.18)}
+.swt{width:64px;height:32px;background:#cddcf6;border:1px solid #aebfe0}
+.swt.dark{background:#1e293b;border-color:#334155}
+.swt .k{background:#fff;border:1px solid #aebfe0;box-shadow:0 2px 6px rgba(20,40,90,.28)}
+.swt .k .ic{stroke-width:2.2}.swt .k{color:#d97706}
+.swt.dark .k{background:#e2e8f0;border-color:#475569;color:#4338ca}
+.swt .m{display:block!important;color:#475f8f;opacity:1}
+.swt.dark .m{display:none!important}
+.swt.dark .s{display:block!important;color:#94a3b8;opacity:1}
+.swt .s{display:none!important}
+.swt.dark .s{inset-inline-start:9px}
+/* دليل الاختبارات: مجموعات + صفوف قابلة للفتح */
+.tbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:4px 0 14px}
+.fchips{display:inline-flex;gap:6px;background:var(--head);border:1px solid var(--line);border-radius:99px;padding:3px}
+.fchip{padding:5px 15px;border-radius:99px;font-size:13px;font-weight:600;color:var(--mute)}
+.fchip.on{background:var(--panel);color:var(--acc);box-shadow:0 1px 4px rgba(20,40,90,.16)}
+.tg{margin-bottom:18px}
+.tg>header{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.tg>header h3{margin:0;font-size:15px}.tg>header p{margin:2px 0 0;font-size:12.5px;color:var(--mute)}
+.tg>header .cnt{margin-inline-start:auto}
+.tgi{width:38px;height:38px;border-radius:12px;background:var(--acc2);color:var(--acc);display:inline-flex;align-items:center;justify-content:center;flex:none}
+.tr{border:1px solid var(--line);border-radius:14px;background:var(--panel);margin-bottom:6px;transition:border-color .15s,box-shadow .15s}
+.tr:hover{border-color:color-mix(in srgb,var(--acc) 40%,var(--line))}
+.tr[open]{border-color:var(--acc);box-shadow:0 6px 18px rgba(20,40,90,.07)}
+.tr summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(130px,200px) 1fr auto auto;gap:12px;align-items:center;padding:11px 14px}
+.tr summary::-webkit-details-marker{display:none}
+.tn{font-weight:700;font-size:14px;line-height:1.5}
+.tw1{font-size:12.8px;color:var(--mute);line-height:1.6}
+.lv{font-style:normal;font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--acc2);color:var(--acc);white-space:nowrap}
+.lv.adv{background:color-mix(in srgb,#f59e0b 16%,var(--panel));color:#b45309}
+[data-theme=dark] .lv.adv{color:#fbbf24}
+.tb{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:2px 14px 14px}
+.tbk{display:flex;gap:10px;align-items:flex-start;background:var(--head);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.tbi{flex:none;width:28px;height:28px;border-radius:9px;background:var(--acc2);color:var(--acc);display:inline-flex;align-items:center;justify-content:center}
+.tbk b{display:block;font-size:12.5px;color:var(--acc);margin-bottom:2px}
+.tbk p{margin:0;font-size:13px;line-height:1.75}
+@media(max-width:760px){.tr summary{grid-template-columns:1fr auto}.tw1{grid-column:1/-1;order:3}.tb{grid-template-columns:1fr}}
+/* صفحة الترحيب: شريط ميس داليا + قلب ثلاثي الأبعاد */
+.flip{width:min(780px,94vw);perspective:1800px}
+.wcard{display:grid;transform-style:preserve-3d;transition:transform .85s cubic-bezier(.22,.8,.2,1)}
+.flip.flipped .wcard{transform:rotateY(180deg)}
+.flip.turning .wcard{animation:flipLift .85s cubic-bezier(.22,.8,.2,1)}
+@keyframes flipLift{50%{scale:1.045}}
+.face{grid-area:1/1;backface-visibility:hidden;-webkit-backface-visibility:hidden;min-width:0}
+.fb{transform:rotateY(180deg);pointer-events:none}
+.flip.flipped .fb{pointer-events:auto}.flip.flipped .ff{pointer-events:none}
+.flip .welcome{width:100%;height:100%;animation:none}
+.dstrip{display:flex;align-items:center;gap:11px;margin-top:16px;padding:7px 12px 7px 8px;border-radius:99px;background:var(--panel);border:1px solid color-mix(in srgb,var(--acc) 26%,var(--line));box-shadow:0 4px 14px rgba(20,40,90,.1);text-align:start;max-width:100%;transition:transform .18s,box-shadow .18s,border-color .18s;color:var(--text)}
+.dstrip:hover{transform:translateY(-2px);border-color:var(--acc);box-shadow:0 8px 20px rgba(37,99,235,.2)}
+.dstrip>.ic{color:var(--acc);flex:none}
+.dth{position:relative;flex:none;width:44px;height:44px;border-radius:50%;padding:2px;background:var(--acc-solid)}
+.dth img{display:block;width:100%;height:100%;border-radius:50%;object-fit:cover;border:2px solid var(--panel)}
+.dth::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--acc);opacity:0;animation:ring 2.4s ease-out infinite}
+@keyframes ring{0%{transform:scale(.88);opacity:.55}100%{transform:scale(1.28);opacity:0}}
+.dtx{display:flex;flex-direction:column;gap:1px;min-width:0}.dtx b{font-size:13.5px}.dtx small{font-size:11.5px;color:var(--mute);line-height:1.45}
+.dm{background:var(--panel)}
+.dm .dph{position:relative;flex:0 0 40%;min-height:420px;margin:14px;border-radius:18px;overflow:hidden;background:#0c2748}
+.dm .dph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 12%}
+.dm .dph::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 62%,rgba(8,24,52,.72))}
+.dbadge{position:absolute;z-index:1;inset-inline:14px;bottom:14px;color:#fff;font-weight:700;font-size:15px;backdrop-filter:blur(8px);background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:8px 12px;text-align:center}
+.dinfo{flex:1;padding:18px 22px 20px;min-width:0;display:flex;flex-direction:column}
+.dtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.dinfo .wx{position:static}
+.dback{display:inline-flex;align-items:center;gap:4px;color:var(--acc);font-weight:600;font-size:13px;padding:5px 10px;border-radius:99px;background:var(--acc2)}
+[dir=rtl] .dback .ic{transform:none}[dir=ltr] .dback .ic{transform:rotate(180deg)}
+.dk{font-size:12px;font-weight:700;color:var(--acc);background:var(--acc2);align-self:flex-start;padding:3px 11px;border-radius:99px}
+.dinfo h2{margin:8px 0 2px;font-size:24px}.dinfo h3{margin:10px 0 8px;font-size:14.5px;color:var(--mute);font-weight:600}
+.dfeat{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.dfeat li{display:flex;gap:11px;align-items:flex-start;padding:9px 11px;border-radius:13px;border:1px solid var(--line);background:var(--head);opacity:0;transform:translateY(10px)}
+.flip.flipped .dfeat li{animation:fup .5s cubic-bezier(.22,.8,.2,1) forwards;animation-delay:calc(.45s + var(--i)*.08s)}
+@keyframes fup{to{opacity:1;transform:none}}
+.fi{flex:none;width:34px;height:34px;border-radius:11px;background:var(--acc2);color:var(--acc);display:inline-flex;align-items:center;justify-content:center}
+.dfeat b{font-size:13.5px}.dfeat p{margin:1px 0 0;font-size:12.8px;color:var(--mute);line-height:1.65}
+.dact{margin-top:auto;padding-top:12px}
+@media(max-width:720px){.dm{flex-direction:column}.dm .dph{flex:none;min-height:240px}}
+@media(prefers-reduced-motion:reduce){.wcard{transition:none}.flip.turning .wcard{animation:none}.dth::after{animation:none}.flip.flipped .dfeat li{animation:none;opacity:1;transform:none}}
+.dstrip{width:100%;box-sizing:border-box;max-width:340px}
+.dact .go{width:100%;background:var(--acc-solid);color:#fff;border:0;border-radius:12px;padding:10px 16px;font-weight:700;font-size:14px;box-shadow:0 4px 12px color-mix(in srgb,var(--acc-solid) 30%,transparent)}
+.dinfo{padding:12px 20px 16px}.dinfo h2{margin:6px 0 0;font-size:22px}.dinfo h3{margin:6px 0 6px}
+.dfeat{gap:6px}.dfeat li{padding:7px 10px}.dfeat p{line-height:1.55}.dact{padding-top:10px}
+.dm .dph{min-height:0}

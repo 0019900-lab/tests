@@ -60,3 +60,11 @@ export const FAQ=[
 [['ما الفرق بينه وبين SPSS؟','How does it compare with SPSS?'],['الأسماء والقوائم مألوفة (Data View وVariable View وAnalyze) والجداول بنمط APA. والفرق أنه يعمل في المتصفح بلا تثبيت، ويضيف «معالج اختيار الاختبار» و«فسّر نتائجي» لتفهم النتيجة بلغة بسيطة.','Names and menus are familiar (Data View, Variable View, Analyze) and tables follow APA. The differences: it runs in the browser with no install, and adds a Test Wizard and “Explain my results” for plain-language interpretation.']],
 [['أين أجد أمراً معيّناً بسرعة؟','How do I find a command fast?'],['اضغط Ctrl+K واكتب جزءاً من اسمه بالعربية أو الإنجليزية، ثم Enter.','Press Ctrl+K, type part of its name in Arabic or English, then Enter.']],
 [['هل أعتمد على «فسّر نتائجي» وحده؟','Can I rely on “Explain my results” alone?'],['هو مساعد يطبّق قواعد ثابتة وعتبات معلنة ويذكر حدود الاستنتاج. راجع الافتراضات دائماً وارجع للمشرف أو المختص في القرارات المهمة.','It applies fixed rules and published thresholds and states the limits of the conclusion. Always check assumptions and consult an expert for important decisions.']]];
+
+// مجموعات دليل الاختبارات — [id, أيقونة, اسم, وصف, [act...]]
+export const TGROUPS=[
+['describe','barc',['وصف البيانات وفحصها','Describe and check data'],['ابدأ هنا قبل أي مقارنة','Start here before any comparison'],['frequencies','descriptives','crosstabs','normality']],
+['compare','box',['مقارنة المتوسطات (معلمية)','Compare means (parametric)'],['حين تكون البيانات رقمية وقريبة من الاعتدالية','Numeric data that is roughly normal'],['ttest1','ttestInd','ttestPair','anova']],
+['nonpar','scat',['مقارنة بلا افتراض الاعتدالية','Compare without normality'],['البدائل اللامعلمية للاختبارات السابقة','Non-parametric alternatives to the above'],['mannwhitney','wilcoxon','kruskal']],
+['relate','chart',['العلاقات والتنبؤ','Relationships and prediction'],['قياس العلاقة أو بناء نموذج يتنبأ بنتيجة','Measure a relation or build a predictive model'],['correlate','regression','logistic']],
+['scale','check',['ثبات المقاييس','Scale reliability'],['للاستبانات المكوّنة من عدة بنود','For multi-item questionnaires'],['alpha']]];
