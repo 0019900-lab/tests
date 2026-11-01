@@ -4,7 +4,7 @@ import {initGuide,openGuide,undocumented} from './guide.js';import {showWelcome,
 // Smart-Analysis – القوائم. كل عنصر: [عربي, English, اختصار, أمر, مرحلة] — مرحلة 0 = قريباً بدون موعد محدد
 const S='-';
 const MENUS=[
-['ملف','File',[['جديد','New','Alt+N','new',0],['فتح / استيراد ملف...','Open / Import file...','Ctrl+O','open',0],['حفظ المشروع','Save project','Ctrl+S','save',0],S,['تصدير المخرجات: HTML','Export output: HTML','','exportHtml',3],['تصدير المخرجات: Word','Export output: Word','','exportWord',3],['تصدير المخرجات: PDF','Export output: PDF','','exportPdf',3],['تصدير المخرجات: Markdown','Export output: Markdown','','exportMd',3],['تصدير الجداول: Excel','Export tables: Excel','','exportXlsx',3],S,['تصدير البيانات: CSV','Export data: CSV','','exportCsv',0],['بيانات تجريبية (100 ألف صف)','Demo data (100k rows)','','demo',0],S,['طباعة','Print','Ctrl+P','print',0]]],
+['ملف','File',[['جديد','New','Alt+N','new',0],['فتح / استيراد ملف...','Open / Import file...','Ctrl+O','open',0],['حفظ المشروع','Save project','Ctrl+S','save',0],['حفظ باسم...','Save as...','Ctrl+Shift+S','saveAs',0],S,['تصدير المخرجات: HTML','Export output: HTML','','exportHtml',3],['تصدير المخرجات: Word','Export output: Word','','exportWord',3],['تصدير المخرجات: PDF','Export output: PDF','','exportPdf',3],['تصدير المخرجات: Markdown','Export output: Markdown','','exportMd',3],['تصدير الجداول: Excel','Export tables: Excel','','exportXlsx',3],S,['تصدير البيانات: CSV','Export data: CSV','','exportCsv',0],['بيانات تجريبية (100 ألف صف)','Demo data (100k rows)','','demo',0],S,['طباعة','Print','Ctrl+P','print',0]]],
 ['تحرير','Edit',[['تراجع','Undo','Ctrl+Z','undo',0],['إعادة','Redo','Ctrl+Y','redo',0],S,['نسخ','Copy','Ctrl+C','copy',0],['لصق','Paste','Ctrl+V','paste',0],S,['بحث...','Find...','Ctrl+F','find',3],['إضافة ملاحظة للمخرجات','Add note to output','','addText',3]]],
 ['عرض','View','',null],['بيانات','Data','',null],['تحويل','Transform','',null],['تحليل','Analyze','',null],['رسوم','Graphs','',null],['أدوات','Utilities','',null],['إضافات','Extensions','',null],['نافذة','Window','',null],['مساعدة','Help','',null]];
 const D={
@@ -18,7 +18,7 @@ const D={
 'نافذة':[['عرض البيانات','Data window','','showData',0],['نافذة المخرجات','Output window','','outputWide',3]],
 'مساعدة':[['دليل Smart-Analysis','Smart-Analysis Guide','F1','guide',3],['اختصارات لوحة المفاتيح','Keyboard shortcuts','','guideKeys',3],['شاشة الترحيب','Welcome screen','','welcome',3],['اسأل Miss Dalia','Ask Miss Dalia','','askDalia',0],['عن Smart-Analysis','About Smart-Analysis','','about',0]]};
 MENUS.forEach(m=>{if(!m[2]||m[2]==='')m[2]=D[m[0]]||[]});
-const ICON={new:'new',open:'open',save:'save',exportHtml:'html',exportWord:'word',exportPdf:'pdf',exportMd:'md',exportXlsx:'excel',exportCsv:'export',demo:'sparkle',print:'print',undo:'undo',redo:'redo',copy:'copy',paste:'copy',find:'find',addText:'text',theme:'theme',lang:'lang',palette:'cmd',pane:'output',outputWide:'expand',welcome:'rocket',frequencies:'table',descriptives:'analyze',crosstabs:'data',ttest1:'chart',ttestInd:'chart',ttestPair:'chart',anova:'chart',correlate:'chart',showData:'data',guide:'learn',guideKeys:'keyboard',about:'info',graphs:'chart',wizard:'learn',mannwhitney:'chart',wilcoxon:'chart',kruskal:'chart',regression:'scat',logistic:'scat',compute:'compute',recode:'vars',reverse:'undo',sort:'table',alpha:'check',normality:'qqi',histogram:'hist',bar:'barc',boxplot:'box',scatter:'scat',qq:'qqi',explain:'explain',askDalia:'sparkle'};
+const ICON={new:'new',open:'open',save:'save',saveAs:'save',exportHtml:'html',exportWord:'word',exportPdf:'pdf',exportMd:'md',exportXlsx:'excel',exportCsv:'export',demo:'sparkle',print:'print',undo:'undo',redo:'redo',copy:'copy',paste:'copy',find:'find',addText:'text',theme:'theme',lang:'lang',palette:'cmd',pane:'output',outputWide:'expand',welcome:'rocket',frequencies:'table',descriptives:'analyze',crosstabs:'data',ttest1:'chart',ttestInd:'chart',ttestPair:'chart',anova:'chart',correlate:'chart',showData:'data',guide:'learn',guideKeys:'keyboard',about:'info',graphs:'chart',wizard:'learn',mannwhitney:'chart',wilcoxon:'chart',kruskal:'chart',regression:'scat',logistic:'scat',compute:'compute',recode:'vars',reverse:'undo',sort:'table',alpha:'check',normality:'qqi',histogram:'hist',bar:'barc',boxplot:'box',scatter:'scat',qq:'qqi',explain:'explain',askDalia:'sparkle'};
 // شريط الأدوات: [أيقونة، أمر، عربي، English، اختصار]
 const TB=[['new','new','جديد','New','Alt+N','جديد','New'],['open','open','فتح','Open','Ctrl+O','فتح','Open'],['save','save','حفظ','Save','Ctrl+S','حفظ','Save'],'|',['undo','undo','تراجع','Undo','Ctrl+Z','تراجع','Undo'],['redo','redo','إعادة','Redo','Ctrl+Y','إعادة','Redo'],'|',['find','find','بحث','Find','Ctrl+F','بحث','Find'],['cmd','palette','لوحة الأوامر','Command palette','Ctrl+K','الأوامر','Commands'],'|',['compute','compute','حساب متغير','Compute Variable','','حساب','Compute'],['analyze','descriptives','إحصاء وصفي','Descriptives','','وصفي','Describe'],['chart','graphs','الرسوم البيانية','Charts','','رسوم','Charts'],['explain','explain','فسّر نتائجي','Explain my results','Alt+E','فسّر','Explain']];
 const $=s=>document.querySelector(s),root=document.documentElement;
@@ -71,6 +71,7 @@ addEventListener('keydown',e=>{if(e.isComposing)return;const k=letter(e),ctrl=e.
  if(document.querySelector('.dlgov:not(.gov):not(.wov)')){return}
  let f=null;
  if(e.key==='F1')f=()=>ACT.guide();
+ else if(ctrl&&e.shiftKey&&!e.altKey&&k==='s')f=()=>ACT.saveAs();
  else if(ctrl&&!e.shiftKey&&!e.altKey){f={k:()=>openPal(),f:()=>openFind(),s:()=>ACT.save(),o:()=>ACT.open()}[k]}
  else if(alt){f={d:()=>ACT.theme(),l:()=>ACT.lang(),o:()=>ACT.pane(),w:()=>ACT.outputWide(),n:()=>ACT.new(),e:()=>ACT.explain(),t:()=>ACT.wizard()}[k]}
  else if(e.key==='Escape')close();
@@ -93,7 +94,7 @@ function installHelp(){if(document.querySelector('.inst'))return;const ua=naviga
 $('#btnInstall').onclick=async()=>{if(dp){dp.prompt();await dp.userChoice;dp=null}else installHelp()};
 $('#btnGuide').onclick=()=>ACT.guide();$('#btnDalia').onclick=()=>ACT.askDalia();
 initUpdate();
-Object.assign(ACT,{wizard:()=>openWizard(ACT),new:F.newDoc,open:F.openDialog,save:F.save,exportCsv:F.exportCsv,demo:F.demo,undo:()=>{undo()},redo:()=>{redo()},copy:G.copy,paste:G.paste,...A,...TR,...TR2});
+Object.assign(ACT,{wizard:()=>openWizard(ACT),new:F.newDoc,open:F.openDialog,save:F.save,saveAs:F.saveAs,exportCsv:F.exportCsv,demo:F.demo,undo:()=>{undo()},redo:()=>{redo()},copy:G.copy,paste:G.paste,...A,...TR,...TR2});
 initOutput();initGuide({menus:MENUS,acts:ACT,toolbar:TB,icon:c=>ICON[c]});
 applyLook();G.init();
 const miss=undocumented();if(miss.length)console.warn('StatLab guide: missing docs for',miss.join(', '));

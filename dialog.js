@@ -16,7 +16,7 @@ export function dialog(id,spec,onRun){
   if(o.type==='check')h+=`<label class="o"><input type="checkbox" data-o="${o.key}"${val?' checked':''}> ${lb}</label>`;
   else if(o.type==='sel')h+=`<label class="o">${lb} <select data-o="${o.key}">${o.opts.map(([k,l])=>`<option value="${k}"${val===k?' selected':''}>${esc(tr(l))}</option>`).join('')}</select></label>`;
   else h+=`<label class="o">${lb} <input data-o="${o.key}" type="${o.type==='num'?'number':'text'}" step="any" value="${esc(val??'')}"></label>`}
- h+=`</div></div><div class="derr"></div><div class="dfoot"><button class="go">${ar?'تشغيل':'Run'}</button><button class="cx">${ar?'إلغاء':'Cancel'}</button></div></div>`;
+ h+=`</div></div><div class="derr"></div><div class="dfoot"><button class="go">${spec.go?tr(spec.go):ar?'تشغيل':'Run'}</button><button class="cx">${ar?'إلغاء':'Cancel'}</button></div></div>`;
  ov.innerHTML=h;document.body.append(ov);
  const q=s=>ov.querySelector(s),close=()=>ov.remove();
  const run=()=>{const v={};

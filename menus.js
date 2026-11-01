@@ -8,7 +8,7 @@ const NAME={exportHtml:['صفحة HTML','HTML page'],exportWord:['مستند Wor
  mannwhitney:['مان–ويتني','Mann-Whitney U'],wilcoxon:['ويلكوكسون','Wilcoxon Signed-Rank'],kruskal:['كروسكال–واليس','Kruskal-Wallis H'],regression:['الانحدار الخطي','Linear'],logistic:['الانحدار اللوجستي الثنائي','Binary Logistic'],alpha:['ثبات المقياس (ألفا كرونباخ)','Reliability (Cronbach’s Alpha)']};
 const G=(ar,en,icon,k)=>({g:[ar,en],icon,k});
 const LAYOUT={
- 'ملف':['new','open','demo',S,'save',G('تصدير','Export','export',['exportHtml','exportWord','exportPdf','exportMd',S,'exportXlsx','exportCsv']),S,'print'],
+ 'ملف':['new','open','demo',S,'save','saveAs',G('تصدير','Export','export',['exportHtml','exportWord','exportPdf','exportMd',S,'exportXlsx','exportCsv']),S,'print'],
  'تحرير':['undo','redo',S,'copy','paste',S,'find','addText'],
  'عرض':['pane','outputWide',S,'theme','lang',S,'palette','welcome'],
  'بيانات':['sort','select','split','merge'],

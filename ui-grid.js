@@ -52,7 +52,7 @@ function pasteText(t){if(!t)return;const q=rng(),lines=t.replace(/\r/g,'').split
  const res=commit(ch);anc={r:q.r0,c:q.c0};sel={r:q.r0+lines.length-1,c:q.c0+w-1};render();
  say(res.rejected?T(`تم اللصق مع تجاهل ${res.rejected} قيمة غير رقمية`,`Pasted; ${res.rejected} non-numeric values ignored`):T(`تم لصق ${ch.length.toLocaleString()} خلية`,`Pasted ${ch.length.toLocaleString()} cells`))}
 export function refresh(){if(view==='data')render();else renderVars()}
-export function goTo(r,c){setView('data');sel={r,c};anc={r,c};ensureVisible();render();wrap.focus({preventScroll:true})}
+export function goTo(r,c,keepFocus){setView('data');sel={r,c};anc={r,c};ensureVisible();render();if(!keepFocus)wrap.focus({preventScroll:true})}
 export const copy=()=>{navigator.clipboard.writeText(toTSV()).then(()=>say(T('تم النسخ','Copied')),()=>say(T('منع المتصفح النسخ، استخدم Ctrl+C','Browser blocked copying — use Ctrl+C')))};
 export async function paste(){try{pasteText(await navigator.clipboard.readText())}catch{say(T('منع المتصفح قراءة الحافظة، استخدم Ctrl+V','Browser blocked clipboard — use Ctrl+V'))}}
 // ---- Variable View ----
