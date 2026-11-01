@@ -1,8 +1,8 @@
 // Smart-Analysis – تجهيز البيانات (المرحلة 5، الجزء 3): اختيار الحالات، استبدال القيم المفقودة، التصنيف البصري (Binning).
 // المحركات (buildMask / fillMissing / binCuts / binOf) دوال نقية قابلة للاختبار؛ الواجهة في آخر الملف.
 import {T} from './i18n.js';
-import {store,replaceAll} from './data.js';
-import {col,getFilter,setFilter,getSplit,setSplit,splitGroups} from './analyses.js';
+import {store,replaceAll,setVar} from './data.js';import {scanVar} from './props.js';import {addBlock} from './output.js';
+import {col,getFilter,setFilter,getSplit,setSplit,splitGroups,getWeight,setWeight,weightIndex} from './analyses.js';
 import {compileExpr,colGetter,uniqueName,typedVar} from './transform.js';
 import {dialog} from './dialog.js';import {mergeFiles} from './merge.js';
 const bad=(a,e)=>{throw new Error(T(a,e))};
@@ -51,12 +51,29 @@ const say=t=>{const s=document.querySelector('#status');if(s)s.textContent=t};
 const need=()=>{if(!store.vars.length){say(T('حمّل البيانات أولاً (ملف ← بيانات تجريبية)','Load data first (File → Demo data)'));return false}return true};
 function addVars(newVars,newCols){replaceAll({name:store.name,vars:[...store.vars,...newVars],cols:[...store.cols,...newCols],n:store.n},false)}
 function badge(){const mk=(id,fn)=>{let b=document.querySelector('#'+id);if(!b){const ft=document.querySelector('#statusbar');if(!ft)return null;b=document.createElement('button');b.id=id;b.type='button';b.className='sbadge';b.onclick=fn;ft.insertBefore(b,ft.children[1]||null)}return b};
- const f=getFilter(),sp=getSplit(),bf=mk('fltBadge',()=>TR2.select()),bs=mk('splitBadge',()=>TR2.split());if(!bf||!bs)return;
+ const f=getFilter(),sp=getSplit(),bf=mk('fltBadge',()=>TR2.select()),bs=mk('splitBadge',()=>TR2.split()),bw=mk('wgtBadge',()=>TR2.weight()),wt=getWeight();if(!bf||!bs||!bw)return;
+ bw.hidden=!wt;if(wt){bw.textContent=T(`مرجَّح بـ: ${wt.name}`,`Weighted by: ${wt.name}`);bw.title=T('تُكرَّر كل حالة بعدد الوزن (مقرَّباً لأقرب عدد صحيح) أثناء التحليل','Each case is repeated by its weight (rounded) during analysis')}
  bf.hidden=!f;if(f){bf.textContent=T(`مرشَّح: ${f.n.toLocaleString()} من ${store.n.toLocaleString()} حالة`,`Filter on: ${f.n.toLocaleString()} of ${store.n.toLocaleString()} cases`);bf.title=f.desc}
  bs.hidden=!sp;if(sp){bs.textContent=T(`مقسَّم حسب: ${sp.names.join('، ')}`,`Split by: ${sp.names.join(', ')}`);bs.title=T('كل تحليل يُشغَّل لكل مجموعة على حدة','Every analysis runs once per group')}}
 if(typeof document!=='undefined'){document.addEventListener('sa:filter',badge);badge()}
 export const TR2={
  merge:mergeFiles,
+ props(){if(!need())return;
+  dialog('vp',{title:['تعريف خصائص المتغير','Define Variable Properties'],fields:[{key:'vars',label:['المتغيرات المراد فحصها','Variables to scan'],multi:true}],options:[
+   {key:'apply',type:'check',label:['تطبيق مستوى القياس المقترح على المتغيرات المختلفة','Apply the suggested measurement level where it differs'],def:false}],
+   need:v=>v.vars.length?'':['اختر متغيراً واحداً على الأقل','Pick at least one variable']},
+  v=>{const rs=v.vars.map(c=>scanVar(store.vars[c],col(c,true))),ch=[];
+   if(v.apply)rs.forEach((r,i)=>{if(r.change){const e=setVar(v.vars[i],'measure',r.suggested);if(!e)ch.push(r.name)}});
+   const u=r=>r.unlabeled.length?r.unlabeled.slice(0,6).join(', ')+(r.unlabeled.length>6?` … (+${r.unlabeled.length-6})`:''):'';
+   addBlock('Variable Properties Scan',[{cap:'Variable Properties',head:['Variable','Valid N','Distinct values','Min','Max','Current measure','Suggested measure','Unlabeled values'],rows:rs.map(r=>[r.name,r.n,r.capped?r.distinct+'+':r.distinct,r.min===null?'':r.min,r.max===null?'':r.max,r.current,r.suggested,u(r)]),note:'Suggested measure is a heuristic: text or ≤ 2 distinct values → Nominal; whole numbers with ≤ 10 distinct values → Ordinal (Nominal if ≤ 4 and labelled); otherwise Scale. Review before relying on it.'+(ch.length?` Applied to: ${ch.join(', ')}.`:'')}],`Scanned ${rs.length} variable(s)`);
+   say(T(`فُحص ${rs.length} متغيراً${v.apply?` — عُدِّل مستوى القياس لـ ${ch.length}`:''}`,`Scanned ${rs.length} variable(s)${v.apply?` — measurement level changed for ${ch.length}`:''}`))}) },
+ weight(){if(!need())return;const cur=getWeight();
+  dialog('wt',{title:['ترجيح الحالات','Weight Cases'],fields:[{key:'w',label:['متغير الوزن (تكرار الحالة)','Weight variable (frequency)'],num:true}],options:[
+   {key:'mode',type:'sel',label:['الطريقة','Method'],def:cur?'off':'on',opts:[['on',['ترجيح الحالات بهذا المتغير','Weight cases by this variable']],['off',['إلغاء الترجيح','Turn weighting off']]]}],
+   need:v=>v.mode==='off'||v.w>=0?'':['اختر متغير الوزن','Pick the weight variable']},
+  v=>{if(v.mode==='off'){setWeight(null);say(T('أُلغي ترجيح الحالات','Weighting is off'));return}
+   const r=weightIndex(v.w);setWeight({v:v.w,name:store.vars[v.w].name});
+   say(T(`رُجِّحت الحالات بـ «${store.vars[v.w].name}»: ${r.idx.length.toLocaleString()} حالة مرجَّحة${r.rounded?` (قُرِّب ${r.rounded} وزن لأقرب عدد صحيح)`:''}${r.dropped?` · استُبعدت ${r.dropped} حالة بوزن صفر أو سالب أو مفقود`:''}`,`Weighted by “${store.vars[v.w].name}”: ${r.idx.length.toLocaleString()} weighted cases${r.rounded?` (${r.rounded} weights rounded to integers)`:''}${r.dropped?` · ${r.dropped} cases with zero, negative or missing weight excluded`:''}`))}) },
  split(){if(!need())return;const cur=getSplit();
   dialog('sp',{title:['تقسيم الملف','Split File'],fields:[{key:'vars',label:['قسّم حسب (متغير فئوي أو أكثر)','Split by (one or more categorical variables)'],multi:true}],options:[
    {key:'mode',type:'sel',label:['الطريقة','Method'],def:cur?'off':'sep',opts:[['sep',['تحليل كل مجموعة على حدة','Run each analysis separately for each group']],['off',['إلغاء التقسيم (تحليل كل الحالات معاً)','Turn splitting off (analyse all cases together)']]]}],

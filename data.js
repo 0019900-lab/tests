@@ -128,8 +128,8 @@ export function toCSV(){const s=store,q=x=>{x=x==null?'':String(x);return/[",\n\
  const out=[s.vars.map(v=>q(v.name)).join(',')];
  for(let r=0;r<s.n;r++){const a=new Array(s.vars.length);for(let c=0;c<a.length;c++){const x=s.cols[c][r],vv=s.vars[c];a[c]=q(typeof x==='number'&&isDateFmt(fmtOf(vv))?fmtDate(x,'Date yyyy-mm-dd'):x)}out.push(a.join(','))}
  return'\uFEFF'+out.join('\r\n')}
-export const toProject=()=>JSON.stringify({app:'statlab',v:1,name:store.name,vars:store.vars,cols:store.cols,n:store.n});
-export function fromProject(t){const o=JSON.parse(t);if(o.app!=='statlab'||!Array.isArray(o.vars)||!Array.isArray(o.cols))throw new Error(T('ملف مشروع غير صالح','Invalid project file'));return{name:o.name||'Untitled1',vars:o.vars,cols:o.cols,n:o.n|0}}
+export const toProject=()=>JSON.stringify({app:'smart-analysis',v:1,name:store.name,vars:store.vars,cols:store.cols,n:store.n});
+export function fromProject(t){const o=JSON.parse(t);if(!['smart-analysis','statlab'].includes(o.app)||!Array.isArray(o.vars)||!Array.isArray(o.cols))throw new Error(T('ملف مشروع غير صالح','Invalid project file'));return{name:o.name||'Untitled1',vars:o.vars,cols:o.cols,n:o.n|0}}
 export function demoState(N=100000){
  const g=()=>{let u=0;while(!u)u=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*Math.random())};
  const id=[],age=[],sex=[],grp=[],inc=[],sc=[];

@@ -128,3 +128,41 @@ export function residDiag(X,res,see){const n=res.length,k=X.length,sw=shapiroWil
  try{const q=linreg(X,res.map(e=>e*e)),LM=n*q.R2;bp={LM,df:k,p:pChi(LM,k)}}catch{}
  let maxZ=0,out3=0;for(const e of res){const z=Math.abs(e/see);if(z>maxZ)maxZ=z;if(z>3)out3++}
  return{sw,bp,maxZ,out3,n}}
+
+// ===== التحليل العاملي (استخلاص المكونات الرئيسة + تدوير Varimax) =====
+// cols: مصفوفة أعمدة (بنود) كاملة الحالات. يعيد: KMO وBartlett والقيم الذاتية والتشبعات والشيوع.
+export function jacobiEig(A){const n=A.length,a=A.map(r=>r.slice()),V=Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>+(i===j)));
+ for(let sw=0;sw<100;sw++){let off=0;for(let i=0;i<n;i++)for(let j=i+1;j<n;j++)off+=a[i][j]*a[i][j];if(off<1e-22)break;
+  for(let p=0;p<n-1;p++)for(let q=p+1;q<n;q++){if(Math.abs(a[p][q])<1e-300)continue;const th=(a[q][q]-a[p][p])/(2*a[p][q]),t=Math.sign(th||1)/(Math.abs(th)+Math.sqrt(th*th+1)),c=1/Math.sqrt(t*t+1),s=t*c;
+   for(let k=0;k<n;k++){const x=a[k][p],y=a[k][q];a[k][p]=c*x-s*y;a[k][q]=s*x+c*y}
+   for(let k=0;k<n;k++){const x=a[p][k],y=a[q][k];a[p][k]=c*x-s*y;a[q][k]=s*x+c*y}
+   for(let k=0;k<n;k++){const x=V[k][p],y=V[k][q];V[k][p]=c*x-s*y;V[k][q]=s*x+c*y}}}
+ const ord=a.map((_,i)=>i).sort((i,j)=>a[j][j]-a[i][i]);return{values:ord.map(i=>a[i][i]),vectors:ord.map(i=>V.map(r=>r[i]))}} // vectors[i] = المتجه الذاتي i
+export function varimax(L,maxIter=500,tol=1e-9){const p=L.length,k=L[0].length;if(k<2)return{L:L.map(r=>r.slice()),iter:0};
+ const h=L.map(r=>Math.sqrt(r.reduce((s,x)=>s+x*x,0))||1);let A=L.map((r,i)=>r.map(x=>x/h[i])),d0=0,it=0;
+ for(;it<maxIter;it++){let T=Array.from({length:k},(_,i)=>Array.from({length:k},(_,j)=>0)),B=A.map(r=>r.slice());
+  // دوران زوجي (Kaiser) لكل عمودين
+  for(let a=0;a<k-1;a++)for(let b=a+1;b<k;b++){let u=0,v=0,C=0,D=0;for(let i=0;i<p;i++){const x=A[i][a],y=A[i][b],uu=x*x-y*y,vv=2*x*y;u+=uu;v+=vv;C+=uu*uu-vv*vv;D+=2*uu*vv}
+   const num=D-2*u*v/p,den=C-(u*u-v*v)/p,ang=Math.atan2(num,den)/4,c=Math.cos(ang),s=Math.sin(ang);
+   for(let i=0;i<p;i++){const x=A[i][a],y=A[i][b];A[i][a]=c*x+s*y;A[i][b]=-s*x+c*y}}
+  let d=0;for(let j=0;j<k;j++){let s2=0,s4=0;for(let i=0;i<p;i++){const q=A[i][j]*A[i][j];s2+=q;s4+=q*q}d+=s4-s2*s2/p}
+  if(d-d0<tol&&it>0){it++;break}d0=d}
+ return{L:A.map((r,i)=>r.map(x=>x*h[i])),iter:it}}
+export function factor(cols,{nf=0,rotate=true}={}){const p=cols.length,n=cols[0].length;if(p<3)throw new Error('p<3');if(n<=p)throw new Error('n<=p');
+ const R=cols.map((a,i)=>cols.map((b,j)=>i===j?1:corr(a,b)));if(R.some(r=>r.some(x=>!Number.isFinite(x))))throw new Error('constant');
+ const ev=jacobiEig(R),det=ev.values.reduce((s,x)=>s*x,1),Ri=invert(R);if(!Ri||!(det>1e-12))throw new Error('singular');
+ // KMO من مصفوفة الصورة المضادة
+ let rs=0,ps=0;const rsI=Array(p).fill(0),psI=Array(p).fill(0);
+ for(let i=0;i<p;i++)for(let j=0;j<p;j++){if(i===j)continue;const pc=-Ri[i][j]/Math.sqrt(Ri[i][i]*Ri[j][j]);rs+=R[i][j]**2;ps+=pc*pc;rsI[i]+=R[i][j]**2;psI[i]+=pc*pc}
+ const kmo=rs/(rs+ps),msa=rsI.map((r,i)=>r/(r+psI[i]));
+ const bChi=-(n-1-(2*p+5)/6)*Math.log(det),bDf=p*(p-1)/2,bP=pChi(bChi,bDf);
+ const k=nf>0?Math.min(nf,p):Math.max(1,ev.values.filter(x=>x>1).length);
+ let L=Array.from({length:p},(_,i)=>Array.from({length:k},(_,j)=>ev.vectors[j][i]*Math.sqrt(Math.max(ev.values[j],0))));
+ for(let j=0;j<k;j++){if(L.reduce((s,r)=>s+r[j],0)<0)for(const r of L)r[j]=-r[j]}
+ const comm=L.map(r=>r.reduce((s,x)=>s+x*x,0)),tot=p;
+ const initial={eig:ev.values,pct:ev.values.map(x=>x/tot*100)};
+ let rot=null;if(rotate&&k>1){const r=varimax(L);let M=r.L;const ss=Array.from({length:k},(_,j)=>M.reduce((s,row)=>s+row[j]*row[j],0)),o=ss.map((_,j)=>j).sort((a,b)=>ss[b]-ss[a]);
+  M=M.map(row=>o.map(j=>row[j]));for(let j=0;j<k;j++){if(M.reduce((s,row)=>s+row[j],0)<0)for(const row of M)row[j]=-row[j]}
+  rot={L:M,ss:o.map(j=>ss[j]),iter:r.iter}}
+ const ssU=Array.from({length:k},(_,j)=>L.reduce((s,r)=>s+r[j]*r[j],0));
+ return{p,n,k,R,kmo,msa,bartlett:{chi:bChi,df:bDf,p:bP},det,initial,ssU,L,comm,rot}}

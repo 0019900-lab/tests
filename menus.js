@@ -5,7 +5,7 @@ const S='-';
 // أسماء قصيرة داخل القوائم الفرعية (الاسم الكامل يبقى في الدليل ولوحة الأوامر)
 const NAME={exportHtml:['صفحة HTML','HTML page'],exportWord:['مستند Word','Word document'],exportPdf:['ملف PDF','PDF file'],exportMd:['Markdown','Markdown'],exportXlsx:['جداول Excel','Tables as Excel'],exportCsv:['بيانات CSV','Data as CSV'],
  ttest1:['T لعينة واحدة','One-Sample T'],ttestInd:['T لعينتين مستقلتين','Independent-Samples T'],ttestPair:['T لعينتين مرتبطتين','Paired-Samples T'],anova:['التباين الأحادي ANOVA','One-Way ANOVA'],
- mannwhitney:['مان–ويتني','Mann-Whitney U'],wilcoxon:['ويلكوكسون','Wilcoxon Signed-Rank'],kruskal:['كروسكال–واليس','Kruskal-Wallis H'],regression:['الانحدار الخطي','Linear'],logistic:['الانحدار اللوجستي الثنائي','Binary Logistic'],alpha:['ثبات المقياس (ألفا كرونباخ)','Reliability (Cronbach’s Alpha)']};
+ mannwhitney:['مان–ويتني','Mann-Whitney U'],wilcoxon:['ويلكوكسون','Wilcoxon Signed-Rank'],kruskal:['كروسكال–واليس','Kruskal-Wallis H'],regression:['الانحدار الخطي','Linear'],logistic:['الانحدار اللوجستي الثنائي','Binary Logistic'],factor:['التحليل العاملي','Factor Analysis'],alpha:['ثبات المقياس (ألفا كرونباخ)','Reliability (Cronbach’s Alpha)']};
 const G=(ar,en,icon,k)=>({g:[ar,en],icon,k});
 const LAYOUT={
  'ملف':['new','open','demo',S,'save','saveAs',G('تصدير','Export','export',['exportHtml','exportWord','exportPdf','exportMd',S,'exportXlsx','exportCsv']),S,'print'],
@@ -13,7 +13,7 @@ const LAYOUT={
  'عرض':['pane','outputWide',S,'theme','lang',S,'palette','welcome'],
  'بيانات':['sort','select','split','merge'],
  'تحويل':['compute','recode','reverse',S,'bin','repmiss'],
- 'تحليل':['wizard',S,G('إحصاء وصفي','Descriptive','table',['frequencies','descriptives','crosstabs']),G('مقارنة المتوسطات','Compare means','chart',['ttest1','ttestInd','ttestPair',S,'anova']),'correlate',G('اختبارات لا معلمية','Nonparametric','vars',['mannwhitney','wilcoxon','kruskal']),'normality',S,G('الانحدار','Regression','scat',['regression','logistic']),G('المقاييس','Scale','check',['alpha'])],
+ 'تحليل':['wizard',S,G('إحصاء وصفي','Descriptive','table',['frequencies','descriptives','crosstabs']),G('مقارنة المتوسطات','Compare means','chart',['ttest1','ttestInd','ttestPair',S,'anova']),'correlate',G('اختبارات لا معلمية','Nonparametric','vars',['mannwhitney','wilcoxon','kruskal']),'normality',S,G('الانحدار','Regression','scat',['regression','logistic']),G('المقاييس','Scale','check',['factor','alpha'])],
  'رسوم':['graphs',S,'histogram','bar','boxplot','scatter','qq'],
  'أدوات':['explain'],
  'نافذة':['showData','outputWide'],

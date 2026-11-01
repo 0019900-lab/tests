@@ -37,12 +37,12 @@ export function mergeVars(A,B,{keyName,outer=false,byRow=false}){
 // ================= الواجهة =================
 const say=t=>{const s=document.querySelector('#status');if(s)s.textContent=t};
 async function readState(f){const F=await import('./files.js'),D=await import('./data.js'),ext=f.name.split('.').pop().toLowerCase(),nm=f.name.replace(/\.[^.]+$/,'');
- if(ext==='statlab'||ext==='json')return D.fromProject(await f.text());
+ if(ext==='smart'||ext==='statlab'||ext==='json')return D.fromProject(await f.text());
  if(ext==='xlsx'||ext==='xls')return D.rowsToState(await F.loadXlsx(f),nm);
  return D.rowsToState(D.parseDelimited(await f.text()),nm)}
 export function mergeFiles(){
  if(!store.vars.length){say(T('حمّل البيانات أولاً (ملف ← بيانات تجريبية)','Load data first (File → Demo data)'));return}
- const inp=document.createElement('input');inp.type='file';inp.accept='.statlab,.json,.csv,.tsv,.txt,.xlsx,.xls';
+ const inp=document.createElement('input');inp.type='file';inp.accept='.smart,.statlab,.json,.csv,.tsv,.txt,.xlsx,.xls';
  inp.onchange=async()=>{const f=inp.files[0];if(!f)return;let B;try{say(T('جاري قراءة الملف…','Reading the file…'));B=await readState(f)}catch(e){say(T('تعذر فتح الملف: ','Could not open file: ')+e.message);return}
   say('');const KEY=['الدمج بمفتاح','by key'];
   dialog('mg',{title:[`دمج مع «${f.name}» (${B.n.toLocaleString()} حالة × ${B.vars.length} متغير)`,`Merge with “${f.name}” (${B.n.toLocaleString()} cases × ${B.vars.length} variables)`],
