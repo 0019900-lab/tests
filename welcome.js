@@ -16,7 +16,15 @@ export function showWelcome(act,force){if(!force&&localStorage.welcome==='0')ret
  <ul class="dfeat">${F.map((f,i)=>`<li style="--i:${i}"><span class="fi">${ic(f[0],20)}</span><div><b>${T(f[1][0],f[1][1])}</b><p>${T(f[2][0],f[2][1])}</p></div></li>`).join('')}</ul>
  <div class="dact"><button class="go" data-a="askDalia">${T('زيارة Ask Miss Dalia','Visit Ask Miss Dalia')}</button></div></div></div></div></div></div>`;
  document.body.append(ov);isolateLatin(ov);const fl=ov.querySelector('.flip'),close=()=>{localStorage.welcome=ov.querySelector('.nm input').checked?'0':'1';ov.remove()};
- const flip=()=>{fl.classList.toggle('flipped');fl.classList.add('turning');setTimeout(()=>fl.classList.remove('turning'),450)};
+ let busy=false;const ff=ov.querySelector('.ff'),fb=ov.querySelector('.fb'),RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+ const flip=()=>{if(busy)return;const to=!fl.classList.contains('flipped');if(RM){fl.classList.toggle('flipped');ov.focus();return}
+  busy=true;fl.classList.add('turning');const A=to?ff:fb,B=to?fb:ff,s=to?1:-1;
+  A.style.visibility='visible';A.style.pointerEvents='none';
+  const a=A.animate([{transform:'rotateY(0) scale(1)'},{transform:`rotateY(${-90*s}deg) scale(.94)`}],{duration:170,easing:'cubic-bezier(.5,0,.9,.6)',fill:'forwards'});
+  a.onfinish=()=>{fl.classList.toggle('flipped',to);A.style.visibility='';A.style.pointerEvents='';a.cancel();
+   const b=B.animate([{transform:`rotateY(${90*s}deg) scale(.94)`},{transform:'rotateY(0) scale(1)'}],{duration:260,easing:'cubic-bezier(.2,.9,.25,1.12)'});
+   b.onfinish=()=>{fl.classList.remove('turning');busy=false;ov.focus()}}};
+ ov.querySelector('.dph img').decode&&ov.querySelector('.dph img').decode().catch(()=>{});
  ov.addEventListener('click',e=>{if(e.target===ov||e.target.closest('.wx'))return close();if(e.target.closest('[data-flip]'))return flip();const b=e.target.closest('[data-a]');if(b){close();act[b.dataset.a]&&act[b.dataset.a]()}});
  ov.addEventListener('keydown',e=>{if(e.key==='Escape'){fl.classList.contains('flipped')?flip():close()}});ov.tabIndex=0;ov.focus()}
 export function showAbout(){const ov=document.createElement('div');ov.className='dlgov wov';
